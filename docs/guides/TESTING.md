@@ -1,12 +1,37 @@
-# Unit Testing Guide
+# Testing Guide
 
-This guide outlines the unit testing strategy for the Kitchen 360° Organizer project.
+This guide provides an overview of the testing strategy for the Kitchen 360° Organizer project. For detailed information about specific testing types, please refer to the following guides:
+
+- [Unit Testing Guide](UNIT_TESTING.md) - For isolated component testing
+- [Integration Testing Guide](INTEGRATION_TESTING.md) - For component interactions and data flow
+
+## Testing Philosophy
+
+Our testing strategy follows these core principles:
+
+1. **Comprehensive Coverage**
+   - Test all critical functionality
+   - Balance between unit and integration tests
+   - Focus on user-facing features
+   - Maintain high test quality
+
+2. **Test Types**
+   - Unit Tests: Isolated component testing
+   - Integration Tests: Component interaction testing
+   - Each type serves a distinct purpose
+
+3. **Quality Assurance**
+   - Automated testing for reliability
+   - Consistent testing patterns
+   - Regular test maintenance
+   - Continuous improvement
 
 ## Testing Tools
 
 - **Jest**: JavaScript testing framework
 - **React Testing Library**: For testing React components
 - **Jest DOM**: For DOM-specific testing utilities
+- **MSW (Mock Service Worker)**: For API mocking
 - **TypeScript**: For type checking
 
 ## Testing Commands
@@ -14,77 +39,78 @@ This guide outlines the unit testing strategy for the Kitchen 360° Organizer pr
 - `npm test`: Run all unit tests
 - `npm run test:watch`: Run tests in watch mode
 - `npm run test:coverage`: Generate test coverage report
+- `npm run test:integration`: Run all integration tests
+- `npm run test:integration:watch`: Run integration tests in watch mode
 
-## Unit Testing Best Practices
+## Testing Workflow
 
-### Component Testing
+1. **Development**
+   - Write tests alongside code
+   - Follow test-driven development when appropriate
+   - Maintain test coverage
+   - Keep tests up to date
 
-1. **Test Structure**
-   - Use `describe` blocks to group related tests
-   - Use `it` or `test` for individual test cases
-   - Use `beforeEach` for test setup
-   - Use `afterEach` for cleanup
+2. **Code Review**
+   - Review test coverage
+   - Verify test quality
+   - Check test maintainability
+   - Ensure proper test organization
 
-2. **Component Rendering**
-   - Test if components render without crashing
-   - Test if required elements are present
-   - Use `data-testid` attributes for reliable element selection
+3. **Continuous Integration**
+   - Automated test runs
+   - Coverage reporting
+   - Test result analysis
+   - Quality gates
 
-3. **Event Handling**
-   - Test user interactions
-   - Verify callback functions are called with correct arguments
-   - Test state updates
+## Best Practices
 
-### Mocking
+1. **Test Organization**
+   - Clear test structure
+   - Consistent naming
+   - Proper documentation
+   - Logical grouping
 
-1. **External Dependencies**
-   - Mock third-party libraries
-   - Mock API calls
-   - Mock browser APIs (e.g., IndexedDB)
-
-2. **Context and Providers**
-   - Create mock context values
-   - Wrap components with necessary providers
-   - Test context-dependent behavior
-
-## Test Categories
-
-1. **Viewer Component**
-   - Basic rendering
-   - Position change handling
-   - Property updates
-   - Event handling
-
-2. **AppBar Component**
-   - Basic rendering
-   - Title display
-   - Theme toggle functionality
-   - Navigation controls
-
-3. **Navigation Component**
-   - Basic rendering
-   - Room list display
-   - Room selection handling
-   - Drawer state management
-
-## Guidelines
-
-1. **Test Coverage**
-   - Focus on critical paths
-   - Test both success and error scenarios
-   - Maintain high coverage for core functionality
-
-2. **Test Organization**
-   - Group related tests together
-   - Use descriptive test names
-   - Keep tests focused and independent
+2. **Test Quality**
+   - Reliable tests
+   - Clear assertions
+   - Proper error handling
+   - Meaningful test names
 
 3. **Performance**
-   - Keep tests fast and efficient
-   - Use appropriate mocking strategies
-   - Avoid unnecessary setup and teardown
+   - Fast test execution
+   - Efficient test setup
+   - Appropriate mocking
+   - Resource management
 
 4. **Maintainability**
-   - Write clear and readable tests
-   - Use consistent patterns
-   - Document complex test scenarios
+   - Clean test code
+   - Clear documentation
+   - Regular updates
+   - Consistent patterns
+
+## Getting Started
+
+1. **Setup**
+   - Install dependencies
+   - Configure testing tools
+   - Set up test environment
+   - Review testing guides
+
+2. **Writing Tests**
+   - Start with unit tests
+   - Add integration tests
+   - Follow best practices
+   - Maintain test quality
+
+3. **Running Tests**
+   - Use appropriate commands
+   - Monitor test results
+   - Address failures
+   - Maintain coverage
+
+## Resources
+
+- [Unit Testing Guide](UNIT_TESTING.md)
+- [Integration Testing Guide](INTEGRATION_TESTING.md)
+- [React Testing Library Documentation](https://testing-library.com/docs/react-testing-library/intro/)
+- [Jest Documentation](https://jestjs.io/docs/getting-started)
