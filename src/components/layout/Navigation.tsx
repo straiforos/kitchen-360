@@ -42,6 +42,7 @@ export const Navigation: React.FC = () => {
   return (
     <Drawer
       variant="permanent"
+      data-testid="navigation-drawer"
       sx={{
         width: 250,
         flexShrink: 0,

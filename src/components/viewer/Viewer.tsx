@@ -119,6 +119,7 @@ export const Viewer: React.FC<ViewerProps> = ({
   return (
     <div
       ref={containerRef}
+      data-testid="viewer-container"
       style={{
         width: '100%',
         height: '100%',
