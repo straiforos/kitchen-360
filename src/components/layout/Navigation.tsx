@@ -15,20 +15,26 @@ import {
 import AddIcon from '@mui/icons-material/Add';
 import KitchenIcon from '@mui/icons-material/Kitchen';
 import ViewInArIcon from '@mui/icons-material/ViewInAr';
+import { IndexedDBStorage } from '../../services/storage/indexedDB';
+
+// Initialize the storage
+const storage = new IndexedDBStorage();
+storage.init();
 
 export const Navigation: React.FC = () => {
   const { currentRoom, currentView, setCurrentRoom, setCurrentView } = useApp();
 
-  const handleRoomSelect = (roomId: string) => {
-    // TODO: Load room data from storage
-    const room = {
-      id: roomId,
-      name: 'Kitchen',
-      views: [],
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
-    setCurrentRoom(room);
+  const handleRoomSelect = async (roomId: string) => {
+    try {
+      const room = await storage.getMetadata(roomId);
+      if (room) {
+        setCurrentRoom(room);
+      } else {
+        console.error('Room not found in storage');
+      }
+    } catch (error) {
+      console.error('Error loading room data:', error);
+    }
   };
 
   const handleViewSelect = (viewId: string) => {
