@@ -1,0 +1,55 @@
+{
+  "name": "kitchen-360",
+  "version": "1.0.0",
+  "description": "A modern web application that helps you organize and manage your kitchen contents through an interactive 360° interface.",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/straiforos/kitchen-360.git"
+  },
+  "keywords": [
+    "360",
+    "kitchen",
+    "organizer",
+    "react",
+    "typescript"
+  ],
+  "author": "",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/straiforos/kitchen-360/issues"
+  },
+  "homepage": "https://github.com/straiforos/kitchen-360#readme",
+  "dependencies": {
+    "@photo-sphere-viewer/core": "^5.10.0",
+    "photo-sphere-viewer": "^4.8.1",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  },
+  "devDependencies": {
+    "@types/react": "^18.2.0",
+    "@types/react-dom": "^18.2.0",
+    "typescript": "^5.0.0"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  }
+}
