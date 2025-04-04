@@ -3,180 +3,290 @@
 ## System Architecture
 
 ### Overview
-The Kitchen 360° Organizer is built as a modern web application with a React frontend and cloud-based backend services. The architecture follows a modular, component-based design pattern with clear separation of concerns.
+The Kitchen 360° Organizer is built as a modern web application with a React frontend and cloud-based backend services. The architecture follows a modular, component-based design pattern with clear separation of concerns, leveraging Photo Sphere Viewer's official plugins for core functionality.
 
 ### Frontend Architecture
 
 #### Core Components
 1. **Viewer Component**
-   - Handles 360° image rendering
-   - Manages hotspot positioning and interactions
-   - Implements pan/zoom controls
-   - Uses Photo Sphere Viewer library
+   - Uses `@photo-sphere-viewer/core` for base 360° image rendering
+   - Implements `@photo-sphere-viewer/plugin-markers` for hotspot management
+   - Uses `@photo-sphere-viewer/plugin-gallery` for view transitions
+   - Implements `@photo-sphere-viewer/plugin-visible-range` for performance
+   - Uses `@photo-sphere-viewer/plugin-zoom` for zoom controls
 
-2. **Hotspot System**
-   - Hotspot creation and management
-   - Position tracking (yaw/pitch coordinates)
-   - Visual representation and styling
-   - Click/touch interaction handling
+2. **View Navigation System**
+   - Leverages `@photo-sphere-viewer/plugin-gallery` for view management
+   - Uses `@photo-sphere-viewer/plugin-virtual-tour` for view connections
+   - Implements `@photo-sphere-viewer/plugin-minimap` for spatial awareness
+   - Uses `@photo-sphere-viewer/plugin-compass` for orientation
 
-3. **Modal System**
-   - Drawer/cabinet detail views
-   - Image gallery management
-   - Note editing interface
-   - Tag management
+3. **Hotspot System**
+   - Uses `@photo-sphere-viewer/plugin-markers` for hotspot visualization
+   - Implements custom marker types for different storage types
+   - Uses `@photo-sphere-viewer/plugin-tooltip` for hotspot information
+   - Leverages `@photo-sphere-viewer/plugin-visible-range` for performance
 
-4. **Editor Interface**
-   - Hotspot placement tools
-   - Position adjustment controls
-   - Metadata editing forms
-   - Save/undo functionality
+4. **Modal System**
+   - Uses `@photo-sphere-viewer/plugin-markers` for hotspot interaction
+   - Implements custom modal for content management
+   - Uses `@photo-sphere-viewer/plugin-tooltip` for quick previews
+
+5. **Editor Interface**
+   - Uses `@photo-sphere-viewer/plugin-markers` for hotspot placement
+   - Implements `@photo-sphere-viewer/plugin-virtual-tour` for view connections
+   - Uses `@photo-sphere-viewer/plugin-visible-range` for performance
 
 ### Backend Architecture
 
 #### Data Models
 
-1. **Hotspot Model**
-```typescript
-interface Hotspot {
-  id: string;
-  title: string;
-  position: {
-    yaw: number;
-    pitch: number;
-  };
-  images: string[];
-  notes: string;
-  tags: string[];
-  lastUpdated: Date;
-  createdBy: string;
-  roomId: string;
-}
-```
+```mermaid
+classDiagram
+    class Room {
+        +String id
+        +String name
+        +View[] views
+        +String createdBy
+        +Date lastUpdated
+    }
 
-2. **Room Model**
-```typescript
-interface Room {
-  id: string;
-  name: string;
-  imageUrl: string;
-  hotspots: string[]; // Array of hotspot IDs
-  createdBy: string;
-  lastUpdated: Date;
-}
+    class View {
+        +String id
+        +String name
+        +String imageUrl
+        +PSVPosition position
+        +PSVMarker[] markers
+        +PSVNode[] nodes
+    }
+
+    class PSVPosition {
+        +Number longitude
+        +Number latitude
+        +Number zoom
+    }
+
+    class PSVNode {
+        +String id
+        +String name
+        +PSVPosition position
+        +String imageUrl
+    }
+
+    class PSVMarker {
+        +String id
+        +String type
+        +PSVPosition position
+        +String tooltip
+        +Object data
+    }
+
+    Room "1" -- "many" View : contains
+    View "1" -- "many" PSVMarker : contains
+    View "1" -- "many" PSVNode : contains
 ```
 
 #### Database Structure
 
-1. **Firestore Collections**
-   - `rooms`: Contains room configurations
-   - `hotspots`: Contains hotspot data
-   - `users`: User profiles and preferences
+```mermaid
+erDiagram
+    ROOMS ||--o{ VIEWS : contains
+    VIEWS ||--o{ MARKERS : contains
+    VIEWS ||--o{ NODES : has
+    USERS ||--o{ ROOMS : owns
+    USERS ||--o{ MARKERS : creates
 
-2. **Storage Buckets**
-   - `360-images`: Original 360° room images
-   - `drawer-images`: Individual drawer/cabinet photos
+    ROOMS {
+        string id PK
+        string name
+        string createdBy FK
+        timestamp lastUpdated
+    }
 
-### Authentication Flow
+    VIEWS {
+        string id PK
+        string roomId FK
+        string name
+        string imageUrl
+        json position
+    }
 
-1. **User Authentication**
-   - Email/password authentication
-   - Social login options (Google, GitHub)
-   - Session management
-   - Role-based access control
+    MARKERS {
+        string id PK
+        string viewId FK
+        string type
+        json position
+        string tooltip
+        json data
+        string createdBy FK
+        timestamp lastUpdated
+    }
 
-2. **Authorization**
-   - Room ownership verification
-   - Collaborative access management
-   - Permission levels (owner, editor, viewer)
+    NODES {
+        string id PK
+        string viewId FK
+        string name
+        string imageUrl
+        json position
+    }
 
-### API Endpoints
+    USERS {
+        string id PK
+        string email
+        string displayName
+        json preferences
+    }
+```
 
-1. **Room Management**
-   - `POST /api/rooms`: Create new room
-   - `GET /api/rooms/:id`: Get room details
-   - `PUT /api/rooms/:id`: Update room
-   - `DELETE /api/rooms/:id`: Delete room
+### View Management System
 
-2. **Hotspot Management**
-   - `POST /api/rooms/:roomId/hotspots`: Create hotspot
-   - `GET /api/rooms/:roomId/hotspots`: List hotspots
-   - `PUT /api/hotspots/:id`: Update hotspot
-   - `DELETE /api/hotspots/:id`: Delete hotspot
+```mermaid
+sequenceDiagram
+    participant User
+    participant UI
+    participant PSV
+    participant Cache
+    participant API
+    participant Storage
 
-3. **Image Management**
-   - `POST /api/images/upload`: Upload new image
-   - `GET /api/images/:id`: Get image details
-   - `DELETE /api/images/:id`: Delete image
+    User->>UI: Select View
+    UI->>PSV: Initialize Viewer
+    PSV->>Cache: Check if view is cached
+    alt View is cached
+        Cache->>PSV: Return cached view
+    else View not cached
+        PSV->>API: Request view data
+        API->>Storage: Fetch image
+        Storage->>API: Return image
+        API->>PSV: Return view data
+        PSV->>Cache: Cache view data
+    end
+    PSV->>User: Display view
+```
+
+### Plugin Integration
+
+```mermaid
+graph TD
+    A[Photo Sphere Viewer] --> B[Core Features]
+    A --> C[Markers Plugin]
+    A --> D[Gallery Plugin]
+    A --> E[Virtual Tour Plugin]
+    A --> F[Other Plugins]
+
+    B --> B1[Base Viewer]
+    B --> B2[Pan Controls]
+    B --> B3[Zoom Controls]
+
+    C --> C1[Hotspot Management]
+    C --> C2[Custom Markers]
+    C --> C3[Tooltips]
+
+    D --> D1[View Transitions]
+    D --> D2[Thumbnails]
+    D --> D3[Loading States]
+
+    E --> E1[View Connections]
+    E --> E2[Node Management]
+    E --> E3[Path Visualization]
+
+    F --> F1[Minimap]
+    F --> F2[Compass]
+    F --> F3[Visible Range]
+```
 
 ### State Management
 
-1. **Global State**
-   - Room configuration
-   - User authentication
-   - UI preferences
-   - Active editor mode
-
-2. **Local State**
-   - Hotspot selection
-   - Modal visibility
-   - Form data
-   - Image gallery state
+```mermaid
+stateDiagram-v2
+    [*] --> Unauthenticated
+    Unauthenticated --> Authenticated: Login
+    Authenticated --> Unauthenticated: Logout
+    
+    Authenticated --> Viewing
+    Viewing --> Editing: Enter Edit Mode
+    Editing --> Viewing: Save Changes
+    
+    Viewing --> HotspotDetails: Select Hotspot
+    HotspotDetails --> Viewing: Close Modal
+    
+    Viewing --> ViewTransition: Change View
+    ViewTransition --> Viewing: Transition Complete
+```
 
 ### Security Considerations
 
-1. **Data Protection**
-   - End-to-end encryption for sensitive data
-   - Secure file uploads
-   - Input validation
-   - XSS prevention
-
-2. **Access Control**
-   - Role-based permissions
-   - Resource ownership verification
-   - Rate limiting
-   - API key management
+```mermaid
+graph TD
+    A[Security] --> B[Data Protection]
+    A --> C[Access Control]
+    
+    B --> B1[End-to-end Encryption]
+    B --> B2[Secure File Uploads]
+    B --> B3[Input Validation]
+    B --> B4[XSS Prevention]
+    
+    C --> C1[Role-based Permissions]
+    C --> C2[Resource Ownership]
+    C --> C3[Rate Limiting]
+    C --> C4[API Key Management]
+```
 
 ### Performance Optimization
 
-1. **Frontend**
-   - Lazy loading of components
-   - Image optimization
-   - Caching strategies
-   - Bundle size optimization
-
-2. **Backend**
-   - Query optimization
-   - Indexing strategy
-   - Caching layer
-   - Batch operations
+```mermaid
+graph LR
+    A[Performance] --> B[Frontend]
+    A --> C[Backend]
+    
+    B --> B1[Lazy Loading]
+    B --> B2[Image Optimization]
+    B --> B3[View Preloading]
+    B --> B4[Caching]
+    B --> B5[Bundle Optimization]
+    
+    C --> C1[Query Optimization]
+    C --> C2[Indexing]
+    C --> C3[Caching]
+    C --> C4[Batch Operations]
+    C --> C5[Image Processing]
+```
 
 ### Deployment Architecture
 
-1. **Development**
-   - Local development environment
-   - Hot reloading
-   - Mock backend services
-
-2. **Production**
-   - CI/CD pipeline
-   - Automated testing
-   - Monitoring and logging
-   - Backup strategy
+```mermaid
+graph TD
+    A[Deployment] --> B[Development]
+    A --> C[Production]
+    
+    B --> B1[Local Environment]
+    B --> B2[Hot Reloading]
+    B --> B3[Mock Services]
+    
+    C --> C1[CI/CD Pipeline]
+    C --> C2[Automated Testing]
+    C --> C3[Monitoring]
+    C --> C4[Backup Strategy]
+```
 
 ### Future Considerations
 
-1. **Scalability**
-   - Horizontal scaling
-   - Load balancing
-   - Database sharding
-   - CDN integration
-
-2. **Features**
-   - AI-powered categorization
-   - Advanced search capabilities
-   - Mobile app development
-   - Offline support
+```mermaid
+mindmap
+  root((Future))
+    Scalability
+      Horizontal Scaling
+      Load Balancing
+      Database Sharding
+      CDN Integration
+    Features
+      AI Categorization
+      Advanced Search
+      Mobile App
+      Offline Support
+      View Stitching
+      3D Reconstruction
+```
 
 ## Development Guidelines
 
@@ -191,6 +301,7 @@ interface Room {
 - Integration tests for features
 - End-to-end testing
 - Performance testing
+- View transition testing
 
 ### Documentation
 - Component documentation
