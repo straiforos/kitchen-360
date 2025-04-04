@@ -34,48 +34,31 @@ describe('Navigation', () => {
     jest.clearAllMocks();
   });
 
-  it('renders without crashing', () => {
+  beforeEach(() => {
     render(
       <AppProvider>
         <Navigation />
       </AppProvider>
     );
+  });
+
+  it('renders without crashing', () => {
     expect(screen.getByTestId('navigation-drawer')).toBeInTheDocument();
   });
 
   it('displays the correct title', () => {
-    render(
-      <AppProvider>
-        <Navigation />
-      </AppProvider>
-    );
     expect(screen.getByText('Rooms')).toBeInTheDocument();
   });
 
   it('shows the add room button', () => {
-    render(
-      <AppProvider>
-        <Navigation />
-      </AppProvider>
-    );
     expect(screen.getByTestId('AddIcon')).toBeInTheDocument();
   });
 
   it('displays the kitchen icon', () => {
-    render(
-      <AppProvider>
-        <Navigation />
-      </AppProvider>
-    );
     expect(screen.getByTestId('KitchenIcon')).toBeInTheDocument();
   });
 
   it('displays the room list', () => {
-    render(
-      <AppProvider>
-        <Navigation />
-      </AppProvider>
-    );
     expect(screen.getByRole('list')).toBeInTheDocument();
   });
 }); 
