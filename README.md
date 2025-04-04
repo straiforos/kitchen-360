@@ -29,7 +29,7 @@ npm install
 npm run dev
 ```
 
-4. Open [http://localhost:3000](http://localhost:3000) in your browser
+4. Open [http://localhost:5173](http://localhost:5173) in your browser
 
 ## Documentation
 
@@ -46,16 +46,25 @@ For detailed documentation, including architecture, development roadmap, and imp
 ```
 kitchen-360/
 ├── src/              # Source code
+│   ├── components/   # React components
+│   ├── context/      # React context providers
+│   ├── hooks/        # Custom React hooks
+│   ├── services/     # Service layer (storage, API)
+│   ├── types/        # TypeScript type definitions
+│   ├── tests/        # Test files
+│   └── mocks/        # Test mocks
 ├── public/           # Static assets
 ├── docs/             # Documentation
 └── tests/            # Test files
 ```
 
 ### Scripts
-- `npm run dev` - Start development server
+- `npm run dev` - Start Vite development server
 - `npm run build` - Build for production
-- `npm run test` - Run tests
+- `npm run test` - Run unit tests
+- `npm run test:integration` - Run integration tests
 - `npm run lint` - Run linter
+- `npm run preview` - Preview production build
 
 ## Contributing
 
@@ -69,4 +78,5 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 - [Photo Sphere Viewer](https://photo-sphere-viewer.js.org/) for the 360° viewer
 - [Material Design 3](https://m3.material.io/) for the UI components
-- [GitHub Pages](https://pages.github.com/) for hosting 
+- [GitHub Pages](https://pages.github.com/) for hosting
+- [Vite](https://vitejs.dev/) for the build tool
