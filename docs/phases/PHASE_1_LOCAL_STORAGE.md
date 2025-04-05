@@ -151,10 +151,14 @@ graph TD
 erDiagram
     ROOMS ||--o{ VIEWS : contains
     VIEWS ||--o{ HOTSPOTS : contains
+    HOTSPOTS ||--o{ ITEMS : contains
     
     ROOMS {
         string id PK
         string name
+        string type
+        string description
+        string layoutType
         json metadata
         timestamp created
         timestamp updated
@@ -164,8 +168,10 @@ erDiagram
         string id PK
         string roomId FK
         string name
+        string description
         string blobKey
         json position
+        json connections
         timestamp created
         timestamp updated
     }
@@ -174,8 +180,27 @@ erDiagram
         string id PK
         string viewId FK
         string type
+        string name
+        string description
         json position
+        json appearance
         json data
+        timestamp created
+        timestamp updated
+    }
+
+    ITEMS {
+        string id PK
+        string hotspotId FK
+        string name
+        string description
+        string category
+        integer quantity
+        string units
+        date expirationDate
+        date purchaseDate
+        date lastUsedDate
+        json customProperties
         timestamp created
         timestamp updated
     }
@@ -193,13 +218,34 @@ src/
 │   │   ├── AppBar.tsx
 │   │   ├── Navigation.tsx
 │   │   └── Modal.tsx
+│   ├── creation/
+│   │   ├── RoomCreation/
+│   │   │   ├── RoomCreationStepper.tsx
+│   │   │   ├── RoomDetailsStep.tsx
+│   │   │   ├── InitialViewStep.tsx
+│   │   │   └── StorageAreasStep.tsx
+│   │   ├── ViewCreation/
+│   │   │   ├── ViewCreationDialog.tsx
+│   │   │   ├── ViewUploadStep.tsx
+│   │   │   └── ViewConnectionsStep.tsx
+│   │   └── HotspotCreation/
+│   │       ├── HotspotCreationDialog.tsx
+│   │       ├── HotspotTypeStep.tsx
+│   │       ├── HotspotPlacementStep.tsx
+│   │       ├── HotspotConfigStep.tsx
+│   │       └── HotspotContentStep.tsx
 │   └── common/
 │       ├── Button.tsx
-│       └── Input.tsx
+│       ├── Input.tsx
+│       ├── Stepper.tsx
+│       └── Dialog.tsx
 ├── hooks/
 │   ├── useStorage.ts
 │   ├── useViewer.ts
-│   └── useHotspots.ts
+│   ├── useHotspots.ts
+│   ├── useRoomCreation.ts
+│   ├── useViewCreation.ts
+│   └── useHotspotCreation.ts
 ├── services/
 │   ├── storage/
 │   │   └── IndexedDB.ts
@@ -209,10 +255,76 @@ src/
 ├── types/
 │   ├── Room.ts
 │   ├── View.ts
-│   └── Hotspot.ts
+│   ├── Hotspot.ts
+│   └── Item.ts
 └── context/
     ├── AppContext.tsx
-    └── ViewerContext.tsx
+    ├── ViewerContext.tsx
+    ├── CreationContext.tsx
+    └── HotspotContext.tsx
+```
+
+## New Features Implementation
+
+### Room Creation Flow
+```mermaid
+sequenceDiagram
+    participant UI
+    participant Creation
+    participant Storage
+    participant State
+    
+    UI->>Creation: Start Room Creation
+    Creation->>UI: Show Stepper
+    UI->>Creation: Enter Room Details
+    Creation->>Storage: Validate Name
+    Storage->>Creation: Return Validation
+    UI->>Creation: Upload Initial View
+    Creation->>Storage: Store Image
+    Storage->>Creation: Return Blob Key
+    UI->>Creation: Configure Storage Areas
+    Creation->>Storage: Save Room
+    Storage->>State: Update Current Room
+    State->>UI: Update Navigation
+```
+
+### View Creation Flow
+```mermaid
+sequenceDiagram
+    participant UI
+    participant Creation
+    participant Storage
+    participant Viewer
+    
+    UI->>Creation: Start View Creation
+    Creation->>UI: Show Dialog
+    UI->>Creation: Upload 360° Image
+    Creation->>Storage: Store Image
+    Storage->>Creation: Return Blob Key
+    UI->>Creation: Configure Position
+    Creation->>Viewer: Preview Position
+    UI->>Creation: Save View
+    Creation->>Storage: Save View
+    Storage->>UI: Update Room Views
+```
+
+### Hotspot Creation Flow
+```mermaid
+sequenceDiagram
+    participant UI
+    participant Creation
+    participant Viewer
+    participant Storage
+    
+    UI->>Creation: Start Hotspot Creation
+    Creation->>UI: Show Type Selection
+    UI->>Creation: Select Type
+    Creation->>Viewer: Enable Placement Mode
+    UI->>Viewer: Place Hotspot
+    Viewer->>Creation: Return Position
+    UI->>Creation: Configure Properties
+    Creation->>Storage: Save Hotspot
+    Storage->>UI: Update View
 ```
 
 ## Performance Considerations
@@ -256,10 +368,14 @@ graph TD
     D[Component Tests] --> E[Viewer]
     D --> F[HotspotManager]
     D --> G[Controls]
+    D --> H[Creation Components]
     
-    H[Hook Tests] --> I[useStorage]
-    H --> J[useViewer]
-    H --> K[useHotspots]
+    I[Hook Tests] --> J[useStorage]
+    I --> K[useViewer]
+    I --> L[useHotspots]
+    I --> M[useRoomCreation]
+    I --> N[useViewCreation]
+    I --> O[useHotspotCreation]
 ```
 
 ### Integration Tests
@@ -277,12 +393,26 @@ sequenceDiagram
     Viewer->>Storage: Load Image
     Storage->>Viewer: Return Image
     Viewer->>Test: Verify Display
+    
+    Test->>UI: Add View
+    UI->>Storage: Save View
+    Storage->>UI: Confirm Save
+    UI->>Viewer: Load View
+    Viewer->>Test: Verify Display
+    
+    Test->>UI: Add Hotspot
+    UI->>Storage: Save Hotspot
+    Storage->>UI: Confirm Save
+    UI->>Viewer: Load Hotspot
+    Viewer->>Test: Verify Display
 ```
 
 ## Next Steps
 1. Set up project structure
 2. Implement basic storage adapters
 3. Create core viewer component
-4. Add hotspot management
-5. Implement basic UI components
-6. Set up testing infrastructure 
+4. Implement room creation flow
+5. Add view creation functionality
+6. Add hotspot creation and management
+7. Implement basic UI components
+8. Set up testing infrastructure 
