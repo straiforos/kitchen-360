@@ -83,7 +83,7 @@ export const Viewer: React.FC<ViewerProps> = ({
     return () => {
       viewer.destroy();
     };
-  }, [imageUrl]);
+  }, [imageUrl, hotspots, onHotspotClick, onPositionChange, position.latitude, position.longitude]);
 
   useEffect(() => {
     if (!viewerRef.current) return;

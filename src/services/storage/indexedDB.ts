@@ -1,4 +1,4 @@
-import { StorageService } from '../../types';
+import { Room, StorageService } from '../../types';
 
 const DB_NAME = 'kitchen360';
 const DB_VERSION = 1;
@@ -39,7 +39,7 @@ export class IndexedDBStorage implements StorageService {
     return this.db.transaction(STORE_NAME, mode).objectStore(STORE_NAME);
   }
 
-  async getMetadata(key: string): Promise<any> {
+  async getMetadata(key: string): Promise<Room> {
     const store = await this.getStore();
     return new Promise((resolve, reject) => {
       const request = store.get(key);
@@ -48,7 +48,7 @@ export class IndexedDBStorage implements StorageService {
     });
   }
 
-  async setMetadata(key: string, value: any): Promise<void> {
+  async setMetadata(key: string, value: Room): Promise<void> {
     const store = await this.getStore('readwrite');
     return new Promise((resolve, reject) => {
       const request = store.put(value, key);

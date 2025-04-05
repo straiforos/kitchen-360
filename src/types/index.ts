@@ -42,8 +42,8 @@ export interface AppState {
 // Storage service types
 export interface StorageService {
   init(): Promise<void>;
-  getMetadata(key: string): Promise<any>;
-  setMetadata(key: string, value: any): Promise<void>;
+  getMetadata(key: string): Promise<Room>;
+  setMetadata(key: string, value: Room): Promise<void>;
   deleteMetadata(key: string): Promise<void>;
   getAllKeys(): Promise<string[]>;
 }
