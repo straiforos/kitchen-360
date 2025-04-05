@@ -5,18 +5,18 @@ const getDesignTokens = (mode: PaletteMode): ThemeOptions => ({
   palette: {
     mode,
     primary: {
-      main: mode === 'light' ? '#6750A4' : '#D0BCFF',
+      main: mode === 'light' ? '#1976d2' : '#90caf9',
     },
     secondary: {
-      main: mode === 'light' ? '#625B71' : '#CCC2DC',
+      main: mode === 'light' ? '#ff9800' : '#ffb74d',
     },
     background: {
-      default: mode === 'light' ? '#FFFBFE' : '#1C1B1F',
-      paper: mode === 'light' ? '#FFFBFE' : '#1C1B1F',
+      default: mode === 'light' ? '#fafafa' : '#121212',
+      paper: mode === 'light' ? '#ffffff' : '#1e1e1e',
     },
   },
   typography: {
-    fontFamily: 'Roboto, sans-serif',
+    fontFamily: 'Inter, system-ui, Avenir, Helvetica, Arial, sans-serif',
     h1: {
       fontSize: '2.5rem',
       fontWeight: 400,
@@ -35,14 +35,14 @@ const getDesignTokens = (mode: PaletteMode): ThemeOptions => ({
     },
   },
   shape: {
-    borderRadius: 12,
+    borderRadius: 8,
   },
   components: {
     MuiButton: {
       styleOverrides: {
         root: {
           textTransform: 'none',
-          borderRadius: 20,
+          borderRadius: 8,
         },
       },
     },
@@ -50,6 +50,7 @@ const getDesignTokens = (mode: PaletteMode): ThemeOptions => ({
       styleOverrides: {
         root: {
           backgroundImage: 'none',
+          borderRadius: 12,
         },
       },
     },
