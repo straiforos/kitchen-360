@@ -1,3 +1,7 @@
+import { render } from '@testing-library/react';
+import { Navigation } from './Navigation';
+import { AppProvider } from '../../context/AppContext';
+
 // Mock room data
 const mockRoom = {
   id: 'kitchen',
@@ -101,12 +105,6 @@ Object.defineProperty(window, 'indexedDB', {
   value: mockIndexedDB,
   writable: true,
 });
-
-// Move imports to the end since we need the mock setup first
-import React from 'react';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { Navigation } from './Navigation';
-import { AppProvider } from '../../context/AppContext';
 
 describe('Navigation', () => {
   beforeEach(() => {

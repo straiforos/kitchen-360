@@ -8,7 +8,7 @@ import {
 } from '@mui/material';
 import Brightness4Icon from '@mui/icons-material/Brightness4';
 import Brightness7Icon from '@mui/icons-material/Brightness7';
-import { useApp } from '../../context/AppContext';
+import { useApp } from '../../context/useApp';
 
 interface AppBarProps {
   mode: 'light' | 'dark';

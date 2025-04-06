@@ -6,7 +6,7 @@ import { AppBar } from './components/layout/AppBar';
 import { Navigation } from './components/layout/Navigation';
 import { Viewer } from './components/viewer/Viewer';
 import { createAppTheme } from './theme';
-import { useApp } from './context/AppContext';
+import { useApp } from './context/useApp';
 
 const AppContent: React.FC = () => {
   const { currentView } = useApp();
