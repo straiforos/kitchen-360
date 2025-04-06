@@ -71,25 +71,47 @@ classDiagram
         +id: string
         +name: string
         +views: View[]
+        +createdAt: Date
+        +updatedAt: Date
     }
     
     class View {
         +id: string
+        +roomId: string
         +name: string
-        +blobUrl: string
+        +description: string
+        +imageUrl: string
         +position: Position
+        +connections: ViewConnection[]
+        +createdAt: Date
+        +updatedAt: Date
     }
     
     class Hotspot {
         +id: string
-        +type: string
+        +name: string
         +position: Position
-        +data: any
+        +description?: string
+    }
+    
+    class Position {
+        +longitude: number
+        +latitude: number
+        +zoom: number
+    }
+    
+    class ViewConnection {
+        +targetViewId: string
+        +position: Position
+        +type: 'door' | 'archway' | 'opening' | 'custom'
     }
     
     AppState --> Room
     AppState --> View
     AppState --> Hotspot
+    View --> Position
+    Hotspot --> Position
+    View --> ViewConnection
 ```
 
 ### Viewer Integration
@@ -151,7 +173,6 @@ graph TD
 erDiagram
     ROOMS ||--o{ VIEWS : contains
     VIEWS ||--o{ HOTSPOTS : contains
-    HOTSPOTS ||--o{ ITEMS : contains
     
     ROOMS {
         string id PK
@@ -159,7 +180,6 @@ erDiagram
         string type
         string description
         string layoutType
-        json metadata
         timestamp created
         timestamp updated
     }
@@ -169,7 +189,7 @@ erDiagram
         string roomId FK
         string name
         string description
-        string blobKey
+        string imageUrl
         json position
         json connections
         timestamp created
@@ -179,28 +199,9 @@ erDiagram
     HOTSPOTS {
         string id PK
         string viewId FK
-        string type
         string name
         string description
         json position
-        json appearance
-        json data
-        timestamp created
-        timestamp updated
-    }
-
-    ITEMS {
-        string id PK
-        string hotspotId FK
-        string name
-        string description
-        string category
-        integer quantity
-        string units
-        date expirationDate
-        date purchaseDate
-        date lastUsedDate
-        json customProperties
         timestamp created
         timestamp updated
     }
