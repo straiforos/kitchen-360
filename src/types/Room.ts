@@ -1,5 +1,4 @@
-import { View } from './View';
-import { ViewCreationData } from "./View";
+import { View, ViewCreationData } from './View';
 
 /**
  * Represents a room containing multiple 360° views
