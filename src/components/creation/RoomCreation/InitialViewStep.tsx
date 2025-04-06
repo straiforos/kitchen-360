@@ -7,13 +7,15 @@ import {
   Button,
   Paper,
 } from '@mui/material';
-import { ViewCreationData } from '../../../types/View';
+import { ViewCreationData } from '@types';
+import { useViewCreation } from '@hooks/useViewCreation';
 
 export const InitialViewStep: React.FC<{
   data?: ViewCreationData;
   onUpdate: (viewData: ViewCreationData) => void;
 }> = ({ data, onUpdate }) => {
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const { viewData, updateViewData } = useViewCreation();
 
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -21,12 +23,12 @@ export const InitialViewStep: React.FC<{
       const reader = new FileReader();
       reader.onloadend = () => {
         setPreviewUrl(reader.result as string);
-        onUpdate({
-          name: data?.name || '',
-          description: data?.description || '',
+        const updatedData = {
+          ...viewData,
           imageFile: file,
-          position: data?.position || { longitude: 0, latitude: 0, zoom: 0 },
-        });
+        };
+        updateViewData(updatedData);
+        onUpdate(updatedData);
       };
       reader.readAsDataURL(file);
     }
@@ -35,12 +37,12 @@ export const InitialViewStep: React.FC<{
   const handleChange = (field: keyof ViewCreationData) => (
     event: React.ChangeEvent<HTMLInputElement>
   ) => {
-    if (data) {
-      onUpdate({
-        ...data,
-        [field]: event.target.value,
-      });
-    }
+    const updatedData = {
+      ...viewData,
+      [field]: event.target.value,
+    };
+    updateViewData(updatedData);
+    onUpdate(updatedData);
   };
 
   return (
@@ -85,7 +87,7 @@ export const InitialViewStep: React.FC<{
           <TextField
             fullWidth
             label="View Name"
-            value={data?.name || ''}
+            value={viewData.name}
             onChange={handleChange('name')}
             required
           />
@@ -94,7 +96,7 @@ export const InitialViewStep: React.FC<{
           <TextField
             fullWidth
             label="Description"
-            value={data?.description || ''}
+            value={viewData.description}
             onChange={handleChange('description')}
             multiline
             rows={4}

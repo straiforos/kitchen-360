@@ -1,10 +1,11 @@
 import React, { useState } from "react";
 import { Box, Typography, Button, Paper, Grid } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
-import { RoomCreationData } from "../../../types/Room";
-import { StorageArea, StorageAreaType, StorageAreaCreationData } from "../../../types/StorageArea";
+import { RoomCreationData } from "@types";
+import { StorageArea, StorageAreaCreationData } from "@types";
 import { StorageAreaList } from "./StorageAreaList";
 import { StorageAreaForm } from "./StorageAreaForm";
+import { useStorageAreaCreation } from "@hooks/useStorageAreaCreation";
 
 /**
  * Props for the StorageAreasStep component
@@ -50,12 +51,7 @@ export const StorageAreasStep: React.FC<StorageAreasStepProps> = ({
   const [isAdding, setIsAdding] = useState(false);
   
   /** State for managing the new storage area being created */
-  const [newArea, setNewArea] = useState<Partial<StorageAreaCreationData>>({
-    type: "Cabinet",
-    name: "",
-    description: "",
-    position: { longitude: 0, latitude: 0, zoom: 1 },
-  });
+  const { storageAreaData, updateStorageAreaData } = useStorageAreaCreation();
 
   /**
    * Handles the initiation of adding a new storage area
@@ -63,7 +59,7 @@ export const StorageAreasStep: React.FC<StorageAreasStepProps> = ({
    */
   const handleAddArea = () => {
     setIsAdding(true);
-    setNewArea({
+    updateStorageAreaData({
       type: "Cabinet",
       name: "",
       description: "",
@@ -146,7 +142,7 @@ export const StorageAreasStep: React.FC<StorageAreasStepProps> = ({
             {isAdding && (
               <Box sx={{ mb: 2 }}>
                 <StorageAreaForm
-                  area={newArea}
+                  area={storageAreaData}
                   onSubmit={handleSaveNewArea}
                   onCancel={() => setIsAdding(false)}
                 />

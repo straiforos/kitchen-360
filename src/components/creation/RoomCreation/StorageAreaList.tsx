@@ -9,7 +9,8 @@ import {
 } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
-import { StorageArea } from "../../../types/StorageArea";
+import { StorageArea } from "@types";
+import { useStorageAreaCreation } from "@hooks/useStorageAreaCreation";
 
 /**
  * Props for the StorageAreaList component
@@ -45,6 +46,13 @@ export const StorageAreaList: React.FC<StorageAreaListProps> = ({
   onEditArea,
   onDeleteArea,
 }) => {
+  const { updateStorageAreaData } = useStorageAreaCreation();
+
+  const handleEdit = (area: StorageArea) => {
+    updateStorageAreaData(area);
+    onEditArea(area);
+  };
+
   return (
     <Paper sx={{ p: 2, mb: 2 }}>
       <List>
@@ -68,7 +76,7 @@ export const StorageAreaList: React.FC<StorageAreaListProps> = ({
               <IconButton
                 edge="end"
                 aria-label="edit"
-                onClick={() => onEditArea(area)}
+                onClick={() => handleEdit(area)}
                 sx={{ mr: 1 }}
               >
                 <EditIcon />

@@ -10,7 +10,8 @@ import {
   Grid,
   Button,
 } from "@mui/material";
-import { StorageArea, StorageAreaType, StorageAreaCreationData } from "../../../types/StorageArea";
+import { StorageArea, StorageAreaType, StorageAreaCreationData } from "@types";
+import { useStorageAreaCreation } from "@hooks/useStorageAreaCreation";
 
 /**
  * Props for the StorageAreaForm component
@@ -50,10 +51,12 @@ export const StorageAreaForm: React.FC<StorageAreaFormProps> = ({
   onSubmit,
   onCancel,
 }) => {
+  const { storageAreaData, updateStorageAreaData } = useStorageAreaCreation();
   const [formData, setFormData] = React.useState(area);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    updateStorageAreaData(formData);
     onSubmit(formData);
   };
 

@@ -10,11 +10,12 @@ import {
   DialogContent,
   DialogActions,
 } from '@mui/material';
-import { RoomCreationData } from '../../../types/Room';
-import { ViewCreationData } from '../../../types/View';
+import { RoomCreationData } from '@types';
+import { ViewCreationData } from '@types';
 import { RoomDetailsStep } from './RoomDetailsStep';
 import { InitialViewStep } from './InitialViewStep';
 import { StorageAreasStep } from './StorageAreasStep';
+import { useRoomCreation } from '@hooks/useRoomCreation';
 
 const steps = ['Room Details', 'Initial View', 'Storage Areas'];
 
@@ -24,12 +25,7 @@ export const RoomCreationStepper: React.FC<{
   onSave: (roomData: RoomCreationData) => void;
 }> = ({ open, onClose, onSave }) => {
   const [activeStep, setActiveStep] = useState(0);
-  const [roomData, setRoomData] = useState<RoomCreationData>({
-    name: '',
-    type: 'Kitchen',
-    description: '',
-    layoutType: 'L-shaped',
-  });
+  const { roomData, updateRoomData, updateInitialView } = useRoomCreation();
 
   const handleNext = () => {
     setActiveStep((prevStep) => prevStep + 1);
@@ -42,14 +38,6 @@ export const RoomCreationStepper: React.FC<{
   const handleSave = () => {
     onSave(roomData);
     onClose();
-  };
-
-  const updateRoomData = (updates: Partial<RoomCreationData>) => {
-    setRoomData((prev) => ({ ...prev, ...updates }));
-  };
-
-  const updateInitialView = (viewData: ViewCreationData) => {
-    setRoomData((prev) => ({ ...prev, initialView: viewData }));
   };
 
   const getStepContent = (step: number) => {

@@ -11,5 +11,5 @@ export interface ImageUrlMixin {
  */
 export interface ImageFileMixin {
   /** Image file to be associated with this entity */
-  imageFile: File;
+  imageFile?: File;
 } 
