@@ -1,5 +1,5 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { RoomCreationStepper } from '../RoomCreationStepper';
+import { RoomCreationStepper } from '../creation/RoomCreation/RoomCreationStepper';
 
 describe('RoomCreationStepper', () => {
   const mockOnClose = jest.fn();

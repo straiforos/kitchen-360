@@ -1,5 +1,5 @@
 import { render } from '@testing-library/react';
-import { Navigation } from './Navigation';
+import { Navigation } from '../layout/Navigation';
 import { AppProvider } from '../../context/AppContext';
 
 // Mock room data

@@ -1,6 +1,6 @@
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
-import { AppBar } from './AppBar';
+import { AppBar } from '../layout/AppBar';
 import { createContext } from 'react';
 
 // Create a mock AppContext

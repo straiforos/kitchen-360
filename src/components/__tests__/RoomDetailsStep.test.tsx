@@ -1,7 +1,7 @@
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
-import { RoomDetailsStep } from '../RoomDetailsStep';
-import { RoomCreationData } from '../../../../types/Room';
+import { RoomDetailsStep } from '../creation/RoomCreation/RoomDetailsStep';
+import { RoomCreationData } from '../../../types/Room';
 
 describe('RoomDetailsStep', () => {
   const mockData: RoomCreationData = {

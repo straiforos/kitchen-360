@@ -1,4 +1,4 @@
-import { IndexedDBStorage } from './indexedDB';
+import { IndexedDBStorage } from '../indexedDB';
 
 // Mock IDB interfaces
 interface MockIDBDatabase extends Partial<IDBDatabase> {

@@ -1,7 +1,7 @@
 import { render } from '@testing-library/react';
 import { screen, fireEvent } from '@testing-library/dom';
-import { InitialViewStep } from '../InitialViewStep';
-import { ViewCreationData } from '../../../../types/View';
+import { InitialViewStep } from '../creation/RoomCreation/InitialViewStep';
+import { ViewCreationData } from '../../../types/View';
 
 describe('InitialViewStep', () => {
   const mockData: ViewCreationData = {

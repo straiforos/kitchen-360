@@ -1,6 +1,6 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { StorageAreasStep } from './StorageAreasStep';
+import { StorageAreasStep } from '../creation/RoomCreation/StorageAreasStep';
 import { RoomCreationData } from '../../../types/Room';
 
 describe('StorageAreasStep', () => {

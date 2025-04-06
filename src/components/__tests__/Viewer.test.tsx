@@ -1,5 +1,5 @@
 import { render, screen } from '@testing-library/react';
-import { Viewer } from './Viewer';
+import { Viewer } from '../viewer/Viewer';
 import { Position, Hotspot } from '../../types';
 
 // Mock the PhotoSphereViewer and its plugins
