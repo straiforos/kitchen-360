@@ -2,6 +2,8 @@
     <!-- for optimal display on high DPI devices -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@photo-sphere-viewer/core/index.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@photo-sphere-viewer/markers-plugin/index.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
 </head>
 
 <div id="viewer" style="width: 100vw; height:100vh;"></div>
@@ -32,6 +34,14 @@
 
     // Get marker plugin to add/remove markers
     const markersPlugin = viewer.getPlugin(MarkersPlugin);
+
+    markersPlugin.addMarker({
+        id: 'salt_sugar',
+        position: { pitch: 0.03444834728612767, yaw: 0.15488413140442567 },
+        html: '<i class="fas fa-cabinet-filing" style="font-size: 24px; color: white; text-shadow: 0 0 5px black;"></i>',
+        anchor: 'bottom center',
+        size: { width: 24, height: 24 }
+    })
 
     // Add position debugging
     viewer.addEventListener('position-updated', (e) => {
