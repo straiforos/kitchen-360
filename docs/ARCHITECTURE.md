@@ -43,6 +43,10 @@ The Kitchen 360° Organizer is built as a modern web application with a React fr
 
 ```mermaid
 classDiagram
+    class ImageUrlMixin {
+        +String imageUrl
+    }
+
     class Room {
         +String id
         +String name
@@ -59,8 +63,7 @@ classDiagram
         +String roomId
         +String name
         +String description
-        +String imageUrl
-        +PSVPosition position
+        +Position position
         +StorageArea[] storageAreas
         +ViewConnection[] connections
         +Date createdAt
@@ -73,13 +76,12 @@ classDiagram
         +String name
         +String type
         +String description
-        +PSVPosition position
-        +String openImageUrl
+        +Position position
         +Date createdAt
         +Date updatedAt
     }
 
-    class PSVPosition {
+    class Position {
         +Number longitude
         +Number latitude
         +Number zoom
@@ -87,10 +89,12 @@ classDiagram
 
     class ViewConnection {
         +String targetViewId
-        +PSVPosition position
+        +Position position
         +String type
     }
 
+    ImageUrlMixin <|-- View : implements
+    ImageUrlMixin <|-- StorageArea : implements
     Room "1" -- "many" View : contains
     View "1" -- "many" StorageArea : contains
     View "1" -- "many" ViewConnection : has
@@ -132,7 +136,7 @@ erDiagram
         string type
         string description
         json position
-        string openImageUrl
+        string imageUrl
         timestamp createdAt
         timestamp updatedAt
     }
@@ -164,7 +168,7 @@ sequenceDiagram
         Cache->>PSV: Return cached view
     else View not cached
         PSV->>API: Request view data
-        API->>Storage: Fetch panorama image
+        API->>Storage: Fetch view image
         Storage->>API: Return image
         API->>PSV: Return view data
         PSV->>Cache: Cache view data
@@ -173,9 +177,68 @@ sequenceDiagram
     
     User->>PSV: Click Storage Area
     PSV->>API: Request storage area data
-    API->>Storage: Fetch open image
-    Storage->>PSV: Return open image
-    PSV->>User: Display open storage area
+    API->>Storage: Fetch storage area image
+    Storage->>PSV: Return image
+    PSV->>User: Display storage area
+```
+
+### Image Management
+
+```mermaid
+graph TD
+    A[Image Management] --> B[Image Types]
+    A --> C[Storage]
+    A --> D[Processing]
+    A --> E[Optimization]
+
+    B --> B1[View Images]
+    B --> B2[Storage Area Images]
+
+    C --> C1[Cloud Storage]
+    C --> C2[CDN Integration]
+    C --> C3[Backup Strategy]
+
+    D --> D1[Compression]
+    D --> D2[Format Conversion]
+    D --> D3[Metadata Handling]
+
+    E --> E1[Lazy Loading]
+    E --> E2[Caching]
+    E --> E3[Progressive Loading]
+```
+
+### Type System
+
+```mermaid
+classDiagram
+    class ImageUrlMixin {
+        +String imageUrl
+    }
+
+    class BaseEntity {
+        +String id
+        +Date createdAt
+        +Date updatedAt
+    }
+
+    class Position {
+        +Number longitude
+        +Number latitude
+        +Number zoom
+    }
+
+    class BasePositionedEntity {
+        +Position position
+    }
+
+    BaseEntity <|-- Room
+    BaseEntity <|-- View
+    BaseEntity <|-- StorageArea
+    ImageUrlMixin <|-- View
+    ImageUrlMixin <|-- StorageArea
+    BasePositionedEntity <|-- View
+    BasePositionedEntity <|-- StorageArea
+    BasePositionedEntity <|-- ViewConnection
 ```
 
 ### Storage Area Types
