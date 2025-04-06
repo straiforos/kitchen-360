@@ -63,6 +63,44 @@ This guide outlines the unit testing strategy for the Kitchen 360° Organizer pr
    - Clear mocks between tests
    - Avoid testing implementation details
 
+3. **Shared Mocks**
+   - Create a `__mocks__` directory within `__tests__` for shared mocks
+   - Place complex or frequently used mocks in this directory
+   - Export mock functions and utilities for reuse
+   - Example structure:
+     ```
+     src/
+     ├── components/
+     │   ├── __tests__/
+     │   │   ├── __mocks__/
+     │   │   │   ├── indexedDB.ts
+     │   │   │   └── api.ts
+     │   │   └── Component.test.tsx
+     ```
+
+   - Example mock implementation:
+     ```typescript
+     // src/components/__tests__/__mocks__/indexedDB.ts
+     export const createMockIndexedDB = () => {
+       // Mock implementation
+     };
+
+     export const setupIndexedDBMock = () => {
+       // Setup global mock
+     };
+     ```
+
+   - Usage in tests:
+     ```typescript
+     import { setupIndexedDBMock } from './__mocks__/indexedDB';
+
+     describe('Component', () => {
+       beforeEach(() => {
+         setupIndexedDBMock();
+       });
+     });
+     ```
+
 ## Test Directory Structure
 
 We follow a co-located test directory structure, placing `__tests__` folders within each feature area to keep tests close to their source code:
