@@ -1,15 +1,10 @@
-import { View } from ".";
+import { View } from './View';
+import { ViewCreationData } from "./View";
 
 export interface Room {
   id: string;
   name: string;
-  type: string;
-  description: string;
-  layoutType: string;
   views: View[];
-  metadata: {
-    [key: string]: string;
-  };
   createdAt: Date;
   updatedAt: Date;
 }
