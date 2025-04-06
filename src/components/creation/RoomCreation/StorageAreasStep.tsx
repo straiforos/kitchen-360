@@ -1,31 +1,10 @@
 import React, { useState } from "react";
-import {
-  Box,
-  Typography,
-  Button,
-  TextField,
-  Select,
-  MenuItem,
-  FormControl,
-  InputLabel,
-  List,
-  ListItem,
-  ListItemText,
-  ListItemSecondaryAction,
-  IconButton,
-  Paper,
-  Grid,
-} from "@mui/material";
+import { Box, Typography, Button, Paper, Grid } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
-import DeleteIcon from "@mui/icons-material/Delete";
-import EditIcon from "@mui/icons-material/Edit";
 import { RoomCreationData } from "../../../types/Room";
 import { StorageArea, StorageAreaType, StorageAreaCreationData } from "../../../types/StorageArea";
-
-/**
- * Available storage area types for selection
- */
-const storageTypes: StorageAreaType[] = ["Cabinet", "Drawer", "Shelf", "Custom"];
+import { StorageAreaList } from "./StorageAreaList";
+import { StorageAreaForm } from "./StorageAreaForm";
 
 /**
  * Props for the StorageAreasStep component
@@ -59,7 +38,6 @@ interface StorageAreasStepProps {
  * ```
  */
 export const StorageAreasStep: React.FC<StorageAreasStepProps> = ({
-  roomData,
   onUpdate,
 }) => {
   /** State for managing the list of storage areas */
@@ -98,15 +76,15 @@ export const StorageAreasStep: React.FC<StorageAreasStepProps> = ({
    * Creates a new StorageArea object with a unique ID and current timestamp
    * Updates the storage areas list and notifies the parent component
    */
-  const handleSaveNewArea = () => {
-    if (newArea.name && newArea.type && newArea.position) {
+  const handleSaveNewArea = (areaData: Partial<StorageAreaCreationData>) => {
+    if (areaData.name && areaData.type && areaData.position) {
       const area: StorageArea = {
         id: `storage-${Date.now()}`,
         viewId: "", // This will be set when the view is created
-        name: newArea.name,
-        type: newArea.type,
-        description: newArea.description ?? "",
-        position: newArea.position,
+        name: areaData.name,
+        type: areaData.type,
+        description: areaData.description ?? "",
+        position: areaData.position,
         imageUrl: "", // This will be set when the image is uploaded
         createdAt: new Date(),
         updatedAt: new Date(),
@@ -115,21 +93,7 @@ export const StorageAreasStep: React.FC<StorageAreasStepProps> = ({
       setStorageAreas(updatedAreas);
       onUpdate({ storageAreas: updatedAreas });
       setIsAdding(false);
-      setNewArea({
-        type: "Cabinet",
-        name: "",
-        description: "",
-        position: { longitude: 0, latitude: 0, zoom: 1 },
-      });
     }
-  };
-
-  /**
-   * Handles initiating the edit of an existing storage area
-   * @param area - The storage area to edit
-   */
-  const handleEditArea = (area: StorageArea) => {
-    setEditingArea(area);
   };
 
   /**
@@ -144,6 +108,7 @@ export const StorageAreasStep: React.FC<StorageAreasStepProps> = ({
       );
       setStorageAreas(updatedAreas);
       onUpdate({ storageAreas: updatedAreas });
+      setEditingArea(null);
     }
   };
 
@@ -180,168 +145,30 @@ export const StorageAreasStep: React.FC<StorageAreasStepProps> = ({
             </Box>
             {isAdding && (
               <Box sx={{ mb: 2 }}>
-                <Typography variant="subtitle1" gutterBottom>
-                  New Storage Area
-                </Typography>
-                <Grid container spacing={2}>
-                  <Grid item xs={12}>
-                    <TextField
-                      fullWidth
-                      label="Name"
-                      value={newArea.name}
-                      onChange={(e) =>
-                        setNewArea({ ...newArea, name: e.target.value })
-                      }
-                      required
-                    />
-                  </Grid>
-                  <Grid item xs={12}>
-                    <FormControl fullWidth>
-                      <InputLabel>Type</InputLabel>
-                      <Select
-                        value={newArea.type}
-                        label="Type"
-                        onChange={(e) =>
-                          setNewArea({
-                            ...newArea,
-                            type: e.target.value as StorageAreaType,
-                          })
-                        }
-                      >
-                        {storageTypes.map((type) => (
-                          <MenuItem key={type} value={type}>
-                            {type}
-                          </MenuItem>
-                        ))}
-                      </Select>
-                    </FormControl>
-                  </Grid>
-                  <Grid item xs={12}>
-                    <TextField
-                      fullWidth
-                      label="Description"
-                      value={newArea.description}
-                      onChange={(e) =>
-                        setNewArea({ ...newArea, description: e.target.value })
-                      }
-                      multiline
-                      rows={2}
-                    />
-                  </Grid>
-                  <Grid item xs={12}>
-                    <Box
-                      sx={{
-                        display: "flex",
-                        gap: 1,
-                        justifyContent: "flex-end",
-                      }}
-                    >
-                      <Button onClick={() => setIsAdding(false)}>Cancel</Button>
-                      <Button
-                        variant="contained"
-                        onClick={handleSaveNewArea}
-                        disabled={!newArea.name || !newArea.type}
-                      >
-                        Save
-                      </Button>
-                    </Box>
-                  </Grid>
-                </Grid>
+                <StorageAreaForm
+                  area={newArea}
+                  onSubmit={handleSaveNewArea}
+                  onCancel={() => setIsAdding(false)}
+                />
               </Box>
             )}
-            <List>
-              {storageAreas.map((area) => (
-                <ListItem
-                  key={area.id}
-                  sx={{
-                    bgcolor:
-                      editingArea?.id === area.id
-                        ? "action.selected"
-                        : "transparent",
-                  }}
-                >
-                  <ListItemText
-                    primary={area.name}
-                    secondary={`${area.type} - ${
-                      area.description || "No description"
-                    }`}
-                  />
-                  <ListItemSecondaryAction>
-                    <IconButton
-                      edge="end"
-                      aria-label="edit"
-                      onClick={() => handleEditArea(area)}
-                      sx={{ mr: 1 }}
-                    >
-                      <EditIcon />
-                    </IconButton>
-                    <IconButton
-                      edge="end"
-                      aria-label="delete"
-                      onClick={() => handleDeleteArea(area.id)}
-                    >
-                      <DeleteIcon />
-                    </IconButton>
-                  </ListItemSecondaryAction>
-                </ListItem>
-              ))}
-            </List>
+            <StorageAreaList
+              storageAreas={storageAreas}
+              selectedAreaId={editingArea?.id ?? null}
+              onEditArea={setEditingArea}
+              onDeleteArea={handleDeleteArea}
+            />
           </Paper>
         </Grid>
         <Grid item xs={12} md={6}>
           {editingArea && (
             <Paper sx={{ p: 2 }}>
-              <Typography variant="subtitle1" gutterBottom>
-                Edit Storage Area
-              </Typography>
-              <Grid container spacing={2}>
-                <Grid item xs={12}>
-                  <TextField
-                    fullWidth
-                    label="Name"
-                    value={editingArea.name}
-                    onChange={(e) => handleUpdateArea({ name: e.target.value })}
-                    required
-                  />
-                </Grid>
-                <Grid item xs={12}>
-                  <FormControl fullWidth>
-                    <InputLabel>Type</InputLabel>
-                    <Select
-                      value={editingArea.type}
-                      label="Type"
-                      onChange={(e) =>
-                        handleUpdateArea({
-                          type: e.target.value as StorageAreaType,
-                        })
-                      }
-                    >
-                      {storageTypes.map((type) => (
-                        <MenuItem key={type} value={type}>
-                          {type}
-                        </MenuItem>
-                      ))}
-                    </Select>
-                  </FormControl>
-                </Grid>
-                <Grid item xs={12}>
-                  <TextField
-                    fullWidth
-                    label="Description"
-                    value={editingArea.description}
-                    onChange={(e) =>
-                      handleUpdateArea({ description: e.target.value })
-                    }
-                    multiline
-                    rows={2}
-                  />
-                </Grid>
-                <Grid item xs={12}>
-                  <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
-                    <Button onClick={() => setEditingArea(null)}>Done</Button>
-                  </Box>
-                </Grid>
-              </Grid>
+              <StorageAreaForm
+                area={editingArea}
+                isEditMode
+                onSubmit={handleUpdateArea}
+                onCancel={() => setEditingArea(null)}
+              />
             </Paper>
           )}
           {!editingArea && !isAdding && (
