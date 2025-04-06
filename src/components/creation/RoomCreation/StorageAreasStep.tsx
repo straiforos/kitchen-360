@@ -20,56 +20,96 @@ import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
 import { RoomCreationData } from "../../../types/Room";
+import { StorageArea, StorageAreaType, StorageAreaCreationData } from "../../../types/StorageArea";
 
-interface StorageArea {
-  id: string;
-  name: string;
-  type: "Cabinet" | "Drawer" | "Shelf" | "Custom";
-  description: string;
-  position?: {
-    x: number;
-    y: number;
-  };
-}
+/**
+ * Available storage area types for selection
+ */
+const storageTypes: StorageAreaType[] = ["Cabinet", "Drawer", "Shelf", "Custom"];
 
-const storageTypes = ["Cabinet", "Drawer", "Shelf", "Custom"] as const;
-
+/**
+ * Props for the StorageAreasStep component
+ */
 interface StorageAreasStepProps {
+  /** The current room creation data */
   roomData: RoomCreationData;
+  /** Callback function to update the room creation data */
   onUpdate: (updates: Partial<RoomCreationData>) => void;
 }
 
+/**
+ * A step component for managing storage areas during room creation.
+ * 
+ * This component allows users to:
+ * - Add new storage areas (cabinets, drawers, shelves, etc.)
+ * - Edit existing storage areas
+ * - Delete storage areas
+ * - Specify storage area properties (name, type, description)
+ * 
+ * The component maintains its own state for the list of storage areas
+ * and communicates changes back to the parent through the onUpdate callback.
+ * 
+ * @component
+ * @example
+ * ```tsx
+ * <StorageAreasStep
+ *   roomData={roomData}
+ *   onUpdate={(updates) => handleRoomUpdate(updates)}
+ * />
+ * ```
+ */
 export const StorageAreasStep: React.FC<StorageAreasStepProps> = ({
   roomData,
   onUpdate,
 }) => {
-  const [storageAreas, setStorageAreas] = useState<StorageArea[]>(
-    roomData.storageAreas || []
-  );
+  /** State for managing the list of storage areas */
+  const [storageAreas, setStorageAreas] = useState<StorageArea[]>([]);
+  
+  /** State for tracking which storage area is being edited */
   const [editingArea, setEditingArea] = useState<StorageArea | null>(null);
+  
+  /** State for tracking whether we're in "add new" mode */
   const [isAdding, setIsAdding] = useState(false);
-  const [newArea, setNewArea] = useState<Partial<StorageArea>>({
+  
+  /** State for managing the new storage area being created */
+  const [newArea, setNewArea] = useState<Partial<StorageAreaCreationData>>({
     type: "Cabinet",
     name: "",
     description: "",
+    position: { longitude: 0, latitude: 0, zoom: 1 },
   });
 
+  /**
+   * Handles the initiation of adding a new storage area
+   * Resets the newArea state to default values
+   */
   const handleAddArea = () => {
     setIsAdding(true);
     setNewArea({
       type: "Cabinet",
       name: "",
       description: "",
+      position: { longitude: 0, latitude: 0, zoom: 1 },
     });
   };
 
+  /**
+   * Handles saving a new storage area
+   * Creates a new StorageArea object with a unique ID and current timestamp
+   * Updates the storage areas list and notifies the parent component
+   */
   const handleSaveNewArea = () => {
-    if (newArea.name && newArea.type) {
+    if (newArea.name && newArea.type && newArea.position) {
       const area: StorageArea = {
         id: `storage-${Date.now()}`,
+        viewId: "", // This will be set when the view is created
         name: newArea.name,
-        type: newArea.type as StorageArea["type"],
-        description: newArea.description || "",
+        type: newArea.type,
+        description: newArea.description ?? "",
+        position: newArea.position,
+        imageUrl: "", // This will be set when the image is uploaded
+        createdAt: new Date(),
+        updatedAt: new Date(),
       };
       const updatedAreas = [...storageAreas, area];
       setStorageAreas(updatedAreas);
@@ -79,14 +119,23 @@ export const StorageAreasStep: React.FC<StorageAreasStepProps> = ({
         type: "Cabinet",
         name: "",
         description: "",
+        position: { longitude: 0, latitude: 0, zoom: 1 },
       });
     }
   };
 
+  /**
+   * Handles initiating the edit of an existing storage area
+   * @param area - The storage area to edit
+   */
   const handleEditArea = (area: StorageArea) => {
     setEditingArea(area);
   };
 
+  /**
+   * Handles updating an existing storage area
+   * @param updates - Partial object containing the properties to update
+   */
   const handleUpdateArea = (updates: Partial<StorageArea>) => {
     if (editingArea) {
       const updatedArea = { ...editingArea, ...updates };
@@ -98,6 +147,10 @@ export const StorageAreasStep: React.FC<StorageAreasStepProps> = ({
     }
   };
 
+  /**
+   * Handles deleting a storage area
+   * @param areaId - The ID of the storage area to delete
+   */
   const handleDeleteArea = (areaId: string) => {
     const updatedAreas = storageAreas.filter((area) => area.id !== areaId);
     setStorageAreas(updatedAreas);
@@ -131,18 +184,16 @@ export const StorageAreasStep: React.FC<StorageAreasStepProps> = ({
                   New Storage Area
                 </Typography>
                 <Grid container spacing={2}>
-                  <Grid xs={12}>
-                    <Item>
-                      <TextField
-                        fullWidth
-                        label="Name"
-                        value={newArea.name}
-                        onChange={(e) =>
-                          setNewArea({ ...newArea, name: e.target.value })
-                        }
-                        required
-                      />
-                    </Item>
+                  <Grid item xs={12}>
+                    <TextField
+                      fullWidth
+                      label="Name"
+                      value={newArea.name}
+                      onChange={(e) =>
+                        setNewArea({ ...newArea, name: e.target.value })
+                      }
+                      required
+                    />
                   </Grid>
                   <Grid item xs={12}>
                     <FormControl fullWidth>
@@ -153,7 +204,7 @@ export const StorageAreasStep: React.FC<StorageAreasStepProps> = ({
                         onChange={(e) =>
                           setNewArea({
                             ...newArea,
-                            type: e.target.value as StorageArea["type"],
+                            type: e.target.value as StorageAreaType,
                           })
                         }
                       >
@@ -261,7 +312,7 @@ export const StorageAreasStep: React.FC<StorageAreasStepProps> = ({
                       label="Type"
                       onChange={(e) =>
                         handleUpdateArea({
-                          type: e.target.value as StorageArea["type"],
+                          type: e.target.value as StorageAreaType,
                         })
                       }
                     >
