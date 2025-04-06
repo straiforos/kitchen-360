@@ -46,18 +46,37 @@ classDiagram
     class Room {
         +String id
         +String name
+        +String type
+        +String description
+        +String layoutType
         +View[] views
-        +String createdBy
-        +Date lastUpdated
+        +Date createdAt
+        +Date updatedAt
     }
 
     class View {
         +String id
+        +String roomId
         +String name
+        +String description
         +String imageUrl
         +PSVPosition position
-        +PSVMarker[] markers
-        +PSVNode[] nodes
+        +StorageArea[] storageAreas
+        +ViewConnection[] connections
+        +Date createdAt
+        +Date updatedAt
+    }
+
+    class StorageArea {
+        +String id
+        +String viewId
+        +String name
+        +String type
+        +String description
+        +PSVPosition position
+        +String openImageUrl
+        +Date createdAt
+        +Date updatedAt
     }
 
     class PSVPosition {
@@ -66,24 +85,15 @@ classDiagram
         +Number zoom
     }
 
-    class PSVNode {
-        +String id
-        +String name
+    class ViewConnection {
+        +String targetViewId
         +PSVPosition position
-        +String imageUrl
-    }
-
-    class PSVMarker {
-        +String id
         +String type
-        +PSVPosition position
-        +String tooltip
-        +Object data
     }
 
     Room "1" -- "many" View : contains
-    View "1" -- "many" PSVMarker : contains
-    View "1" -- "many" PSVNode : contains
+    View "1" -- "many" StorageArea : contains
+    View "1" -- "many" ViewConnection : has
 ```
 
 #### Database Structure
@@ -91,50 +101,48 @@ classDiagram
 ```mermaid
 erDiagram
     ROOMS ||--o{ VIEWS : contains
-    VIEWS ||--o{ MARKERS : contains
-    VIEWS ||--o{ NODES : has
-    USERS ||--o{ ROOMS : owns
-    USERS ||--o{ MARKERS : creates
+    VIEWS ||--o{ STORAGE_AREAS : contains
+    VIEWS ||--o{ VIEW_CONNECTIONS : has
 
     ROOMS {
         string id PK
         string name
-        string createdBy FK
-        timestamp lastUpdated
+        string type
+        string description
+        string layoutType
+        timestamp createdAt
+        timestamp updatedAt
     }
 
     VIEWS {
         string id PK
         string roomId FK
         string name
+        string description
         string imageUrl
         json position
+        timestamp createdAt
+        timestamp updatedAt
     }
 
-    MARKERS {
-        string id PK
-        string viewId FK
-        string type
-        json position
-        string tooltip
-        json data
-        string createdBy FK
-        timestamp lastUpdated
-    }
-
-    NODES {
+    STORAGE_AREAS {
         string id PK
         string viewId FK
         string name
-        string imageUrl
+        string type
+        string description
         json position
+        string openImageUrl
+        timestamp createdAt
+        timestamp updatedAt
     }
 
-    USERS {
+    VIEW_CONNECTIONS {
         string id PK
-        string email
-        string displayName
-        json preferences
+        string sourceViewId FK
+        string targetViewId FK
+        json position
+        string type
     }
 ```
 
@@ -149,20 +157,38 @@ sequenceDiagram
     participant API
     participant Storage
 
-    User->>UI: Select View
+    User->>UI: Select Room
     UI->>PSV: Initialize Viewer
     PSV->>Cache: Check if view is cached
     alt View is cached
         Cache->>PSV: Return cached view
     else View not cached
         PSV->>API: Request view data
-        API->>Storage: Fetch image
+        API->>Storage: Fetch panorama image
         Storage->>API: Return image
         API->>PSV: Return view data
         PSV->>Cache: Cache view data
     end
     PSV->>User: Display view
+    
+    User->>PSV: Click Storage Area
+    PSV->>API: Request storage area data
+    API->>Storage: Fetch open image
+    Storage->>PSV: Return open image
+    PSV->>User: Display open storage area
 ```
+
+### Storage Area Types
+- Cabinet
+- Drawer
+- Shelf
+- Custom
+
+### View Connection Types
+- Door
+- Archway
+- Opening
+- Custom
 
 ### Plugin Integration
 

@@ -47,38 +47,91 @@ This document tracks the iterations and thought process during Phase 1 developme
    - Specific transition types (door, archway, etc.)
    - Proper room-view relationships
 
-### Future Considerations
-1. **Potential Extensions**
-   - Consider adding hotspot types for better categorization
-   - Evaluate need for room metadata for customization
-   - Consider view tagging for better organization
+## Iteration 2: Storage Areas and View Integration (2024-04-07)
 
-2. **Storage Areas**
-   - Implemented nullish coalescing for better default handling
-   - Simplified area creation process
-   - Clear type definitions
+### Changes Made
+1. **Model Refinement**
+   - Introduced `StorageArea` as a first-class entity
+   - Integrated storage areas with Photo Sphere Viewer's marker system
+   - Added support for open/closed states of storage areas
+   - Enhanced view connections with specific types
+
+2. **Type System Updates**
+   - Added `StorageAreaType` (Cabinet, Drawer, Shelf, Custom)
+   - Added `ViewConnectionType` (door, archway, opening, custom)
+   - Enhanced `RoomType` and `RoomLayoutType` with specific values
+   - Added proper relationships between entities
+
+### Rationale
+1. **Storage Area Integration**
+   - Storage areas are now properly modeled as physical spaces
+   - Each storage area can have an open and closed state
+   - Better alignment with real-world kitchen organization
+   - Clear separation between views and storage areas
+
+2. **View System Enhancement**
+   - Views now properly represent 360° panoramas
+   - Storage areas are positioned within views
+   - Clear connections between views for navigation
+   - Better support for room layout visualization
+
+### Impact on Core Features
+1. **Room Organization**
+   - Clear representation of kitchen layouts
+   - Proper categorization of storage spaces
+   - Better support for different room types
+   - Enhanced room description capabilities
+
+2. **View Management**
+   - Storage areas are now properly positioned in views
+   - Support for viewing storage areas in open/closed states
+   - Clear navigation between different views
+   - Better spatial awareness in the room
+
+3. **Storage Area Management**
+   - Proper categorization of storage types
+   - Support for custom storage areas
+   - Clear positioning within views
+   - Enhanced description capabilities
+
+### Future Considerations
+1. **Storage Area Features**
+   - Consider adding inventory management
+   - Evaluate need for storage area metadata
+   - Consider adding storage area tags
+   - Evaluate need for storage area organization
+
+2. **View Enhancements**
+   - Consider adding view thumbnails
+   - Evaluate need for view metadata
+   - Consider adding view tags
+   - Evaluate need for view organization
 
 ## Next Steps
 1. **Immediate Actions**
-   - [ ] Implement the simplified model in the codebase
+   - [ ] Implement the updated model in the codebase
    - [ ] Update storage adapters to handle new structure
    - [ ] Update UI components to reflect model changes
+   - [ ] Implement storage area management UI
 
 2. **Future Iterations**
    - [ ] Evaluate need for inventory management features
    - [ ] Consider adding metadata fields for customization
-   - [ ] Implement tagging system for views
+   - [ ] Implement tagging system for views and storage areas
+   - [ ] Evaluate need for advanced storage area organization
 
 ## Lessons Learned
 1. **Model Design**
-   - Simplicity often leads to better maintainability
-   - Clear relationships are crucial for navigation
+   - Clear entity relationships are crucial
+   - Proper type definitions improve maintainability
    - Timestamps are valuable for data management
+   - Consider real-world use cases in design
 
 2. **Implementation**
    - Type safety is important for model consistency
    - Clear interfaces make development easier
    - Documentation helps track design decisions
+   - Consider future extensibility in design
 
 ## References
 - [Phase 1 Local Storage MVP](docs/phases/PHASE_1_LOCAL_STORAGE.md)
