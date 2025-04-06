@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { useApp } from '../../context/useApp';
 import {
   Drawer,
@@ -13,14 +13,19 @@ import { Room } from '../../types';
 import { Icon } from '../common/Icon';
 import { NavItem } from '../common/NavItem';
 
-// Initialize the storage
-const storage = new IndexedDBStorage();
-storage.init();
-
 export const Navigation: React.FC = () => {
   const { currentRoom, currentView, setCurrentRoom, setCurrentView } = useApp();
+  const storage = useRef<IndexedDBStorage>();
+
+  useEffect(() => {
+    if (!storage.current) {
+      storage.current = new IndexedDBStorage();
+      storage.current.init();
+    }
+  }, []);
 
   const handleAddRoom = async () => {
+    if (!storage.current) return;
     try {
       const newRoom: Room = {
         id: `room-${Date.now()}`,
@@ -33,7 +38,7 @@ export const Navigation: React.FC = () => {
         updatedAt: new Date(),
       };
       
-      await storage.setMetadata(newRoom.id, newRoom);
+      await storage.current.setMetadata(newRoom.id, newRoom);
       setCurrentRoom(newRoom);
     } catch (error) {
       console.error('Error creating new room:', error);
@@ -41,8 +46,9 @@ export const Navigation: React.FC = () => {
   };
 
   const handleRoomSelect = async (roomId: string) => {
+    if (!storage.current) return;
     try {
-      const room = await storage.getMetadata(roomId);
+      const room = await storage.current.getMetadata(roomId);
       if (room) {
         setCurrentRoom(room);
       } else {
