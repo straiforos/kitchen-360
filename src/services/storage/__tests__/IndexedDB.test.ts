@@ -1,149 +1,18 @@
 import { IndexedDBStorage } from '../indexedDB';
-
-// Mock IDB interfaces
-interface MockIDBDatabase extends Partial<IDBDatabase> {
-  objectStoreNames: DOMStringList & { contains: jest.Mock };
-  createObjectStore: jest.Mock;
-  transaction: jest.Mock;
-}
-
-interface MockIDBRequest<T = unknown> {
-  result: T | null;
-  error: DOMException | null;
-  source: null;
-  readyState: 'pending' | 'done';
-  onsuccess: ((event: Event) => void) | null;
-  onerror: ((event: Event) => void) | null;
-  onupgradeneeded: ((event: IDBVersionChangeEvent) => void) | null;
-}
-
-interface MockObjectStore {
-  get: jest.Mock;
-  put: jest.Mock;
-  delete: jest.Mock;
-  getAllKeys: jest.Mock;
-}
-
-const createMockRequest = <T = unknown>(result: T | null = null): MockIDBRequest<T> => {
-  const request: MockIDBRequest<T> = {
-    result,
-    error: null,
-    source: null,
-    readyState: 'pending',
-    onsuccess: null,
-    onerror: null,
-    onupgradeneeded: null,
-  };
-  return request;
-};
+import { createMockIndexedDB } from '../../../components/__tests__/__mocks__/indexedDB';
 
 describe('IndexedDBStorage', () => {
   let storage: IndexedDBStorage;
-  let mockObjectStore: MockObjectStore;
-  let mockDB: MockIDBDatabase;
+  let mockObjectStore: any;
+  let mockDB: any;
 
   beforeEach(() => {
     // Reset all mocks
     jest.clearAllMocks();
 
-    // Create mock object store
-    mockObjectStore = {
-      get: jest.fn().mockImplementation(() => {
-        const request = createMockRequest<{ key: string }>({ key: 'value' });
-        setTimeout(() => {
-          request.readyState = 'done';
-          if (request.onsuccess) {
-            const event = new Event('success');
-            Object.defineProperty(event, 'target', { value: request });
-            request.onsuccess(event);
-          }
-        }, 0);
-        return request;
-      }),
-      put: jest.fn().mockImplementation(() => {
-        const request = createMockRequest();
-        setTimeout(() => {
-          request.readyState = 'done';
-          if (request.onsuccess) {
-            const event = new Event('success');
-            Object.defineProperty(event, 'target', { value: request });
-            request.onsuccess(event);
-          }
-        }, 0);
-        return request;
-      }),
-      delete: jest.fn().mockImplementation(() => {
-        const request = createMockRequest();
-        setTimeout(() => {
-          request.readyState = 'done';
-          if (request.onsuccess) {
-            const event = new Event('success');
-            Object.defineProperty(event, 'target', { value: request });
-            request.onsuccess(event);
-          }
-        }, 0);
-        return request;
-      }),
-      getAllKeys: jest.fn().mockImplementation(() => {
-        const request = createMockRequest<string[]>(['key1', 'key2']);
-        setTimeout(() => {
-          request.readyState = 'done';
-          if (request.onsuccess) {
-            const event = new Event('success');
-            Object.defineProperty(event, 'target', { value: request });
-            request.onsuccess(event);
-          }
-        }, 0);
-        return request;
-      }),
-    };
-
-    // Create mock database
-    mockDB = {
-      objectStoreNames: {
-        contains: jest.fn().mockReturnValue(false), // Return false to trigger store creation
-        length: 1,
-        item: jest.fn(),
-        [Symbol.iterator]: jest.fn(),
-      } as unknown as DOMStringList & { contains: jest.Mock },
-      createObjectStore: jest.fn().mockReturnValue(mockObjectStore),
-      transaction: jest.fn().mockReturnValue({
-        objectStore: jest.fn().mockReturnValue(mockObjectStore),
-      }),
-    };
-
-    // Mock the global indexedDB object
-    const mockIndexedDB = {
-      open: jest.fn().mockImplementation(() => {
-        const request = createMockRequest();
-        request.result = mockDB;
-
-        setTimeout(() => {
-          if (request.onupgradeneeded) {
-            const event = new Event('upgradeneeded') as IDBVersionChangeEvent;
-            Object.defineProperty(event, 'target', { value: request });
-            Object.defineProperty(event, 'oldVersion', { value: 0 });
-            Object.defineProperty(event, 'newVersion', { value: 1 });
-            request.onupgradeneeded(event);
-          }
-          if (request.onsuccess) {
-            const event = new Event('success');
-            Object.defineProperty(event, 'target', { value: request });
-            request.onsuccess(event);
-          }
-        }, 0);
-
-        return request;
-      }),
-      deleteDatabase: jest.fn(),
-      cmp: jest.fn(),
-      databases: jest.fn(),
-    } as unknown as IDBFactory;
-
-    Object.defineProperty(window, 'indexedDB', {
-      value: mockIndexedDB,
-      writable: true,
-    });
+    const { mockDB: db, mockObjectStore: store } = createMockIndexedDB();
+    mockDB = db;
+    mockObjectStore = store;
 
     storage = new IndexedDBStorage();
   });
@@ -162,8 +31,15 @@ describe('IndexedDBStorage', () => {
 
   it('should set metadata', async () => {
     await storage.init();
-    await expect(storage.setMetadata('key', { key: 'value' })).resolves.toBeUndefined();
-    expect(mockObjectStore.put).toHaveBeenCalledWith({ key: 'value' }, 'key');
+    const roomData = {
+      id: 'test-room',
+      name: 'Test Room',
+      views: [],
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+    await expect(storage.setMetadata('key', roomData)).resolves.toBeUndefined();
+    expect(mockObjectStore.put).toHaveBeenCalledWith(roomData, 'key');
   });
 
   it('should delete metadata', async () => {
@@ -181,10 +57,16 @@ describe('IndexedDBStorage', () => {
 
   it('should handle errors', async () => {
     mockObjectStore.get.mockImplementation(() => {
-      const request = createMockRequest();
+      const request = {
+        result: null,
+        error: new DOMException('Error'),
+        source: null,
+        readyState: 'done',
+        onsuccess: null,
+        onerror: jest.fn(),
+        onupgradeneeded: null,
+      };
       setTimeout(() => {
-        request.error = new DOMException('Error');
-        request.readyState = 'done';
         if (request.onerror) {
           const event = new Event('error');
           Object.defineProperty(event, 'target', { value: request });
