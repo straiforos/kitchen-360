@@ -1,10 +1,21 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { StorageAreasStep } from '../creation/RoomCreation/StorageAreasStep';
-import { RoomCreationData } from '../../../types/Room';
+import { RoomCreationData } from '@types';
+
+interface StorageArea {
+  id: string;
+  name: string;
+  type: string;
+  description: string;
+}
+
+interface RoomCreationDataWithStorage extends RoomCreationData {
+  storageAreas: StorageArea[];
+}
 
 describe('StorageAreasStep', () => {
-  const mockRoomData: RoomCreationData = {
+  const mockRoomData: RoomCreationDataWithStorage = {
     name: 'Test Room',
     type: 'Kitchen',
     description: 'Test Description',
@@ -60,7 +71,7 @@ describe('StorageAreasStep', () => {
   });
 
   it('edits an existing storage area', async () => {
-    const roomDataWithArea: RoomCreationData = {
+    const roomDataWithArea: RoomCreationDataWithStorage = {
       ...mockRoomData,
       storageAreas: [
         {
@@ -98,7 +109,7 @@ describe('StorageAreasStep', () => {
   });
 
   it('deletes a storage area', () => {
-    const roomDataWithArea: RoomCreationData = {
+    const roomDataWithArea: RoomCreationDataWithStorage = {
       ...mockRoomData,
       storageAreas: [
         {
