@@ -34,6 +34,43 @@ graph TD
 
 ## Component Architecture
 
+### Core Relationships
+```mermaid
+graph TD
+    subgraph Room
+        R[Room] --> V1[View 1]
+        R --> V2[View 2]
+        R --> V3[View 3]
+    end
+
+    subgraph View 1
+        V1 --> SA1[Storage Area 1]
+        V1 --> SA2[Storage Area 2]
+        V1 --> VC1[View Connection]
+    end
+
+    subgraph View 2
+        V2 --> SA3[Storage Area 3]
+        V2 --> SA4[Storage Area 4]
+        V2 --> VC2[View Connection]
+    end
+
+    subgraph View 3
+        V3 --> SA5[Storage Area 5]
+        V3 --> SA6[Storage Area 6]
+        V3 --> VC3[View Connection]
+    end
+
+    VC1 --> V2
+    VC2 --> V3
+    VC3 --> V1
+
+    style Room fill:#f9f,stroke:#333,stroke-width:2px
+    style View 1 fill:#bbf,stroke:#333,stroke-width:2px
+    style View 2 fill:#bbf,stroke:#333,stroke-width:2px
+    style View 3 fill:#bbf,stroke:#333,stroke-width:2px
+```
+
 ### Storage Layer
 ```mermaid
 classDiagram
