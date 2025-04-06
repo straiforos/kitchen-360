@@ -1,12 +1,11 @@
 /**
- * Represents a position in a 360° viewer, including orientation and zoom level
- * @interface Position
+ * Represents a position in 3D space, used for both views and storage areas
  */
 export interface Position {
-  /** Horizontal rotation in degrees (0-360) */
+  /** Longitude coordinate (horizontal rotation) */
   longitude: number;
-  /** Vertical rotation in degrees (-90 to 90) */
+  /** Latitude coordinate (vertical rotation) */
   latitude: number;
-  /** Zoom level (0-100) */
+  /** Zoom level */
   zoom: number;
 } 
