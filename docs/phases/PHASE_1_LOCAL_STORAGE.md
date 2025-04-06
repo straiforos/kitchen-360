@@ -12,24 +12,24 @@ graph TD
     A --> D[State Manager]
     
     B --> E[Photo Sphere Viewer]
-    B --> F[Hotspot Manager]
+    B --> F[Storage Area Manager]
+    B --> G[View Navigation]
     
-    C --> G[LocalStorage Adapter]
-    C --> H[IndexedDB Adapter]
+    C --> H[LocalStorage Adapter]
+    C --> I[IndexedDB Adapter]
     
-    D --> I[React Context]
-    D --> J[Custom Hooks]
+    D --> J[React Context]
+    D --> K[Custom Hooks]
     
-    E --> K[Core Viewer]
-    E --> L[Basic Plugins]
+    E --> L[Core Viewer]
+    E --> M[Basic Plugins]
     
-    F --> M[Hotspot Creation]
-    F --> N[Hotspot Editing]
+    F --> N[Storage Area Creation]
+    F --> O[Storage Area Editing]
+    F --> P[Open/Close States]
     
-    G --> O[Metadata Storage]
-    
-    H --> P[Blob Storage]
-    H --> Q[Image Cache]
+    G --> Q[View Transitions]
+    G --> R[View Connections]
 ```
 
 ## Component Architecture
@@ -62,7 +62,7 @@ classDiagram
     class AppState {
         +currentRoom: Room
         +currentView: View
-        +hotspots: Hotspot[]
+        +storageAreas: StorageArea[]
         +isEditing: boolean
         +blobUrls: Map<string, string>
     }
@@ -70,6 +70,9 @@ classDiagram
     class Room {
         +id: string
         +name: string
+        +type: RoomType
+        +description: string
+        +layoutType: RoomLayoutType
         +views: View[]
         +createdAt: Date
         +updatedAt: Date
@@ -82,16 +85,22 @@ classDiagram
         +description: string
         +imageUrl: string
         +position: Position
+        +storageAreas: StorageArea[]
         +connections: ViewConnection[]
         +createdAt: Date
         +updatedAt: Date
     }
     
-    class Hotspot {
+    class StorageArea {
         +id: string
+        +viewId: string
         +name: string
+        +type: StorageAreaType
+        +description: string
         +position: Position
-        +description?: string
+        +openImageUrl: string
+        +createdAt: Date
+        +updatedAt: Date
     }
     
     class Position {
@@ -103,14 +112,14 @@ classDiagram
     class ViewConnection {
         +targetViewId: string
         +position: Position
-        +type: 'door' | 'archway' | 'opening' | 'custom'
+        +type: ViewConnectionType
     }
     
     AppState --> Room
     AppState --> View
-    AppState --> Hotspot
+    AppState --> StorageArea
     View --> Position
-    Hotspot --> Position
+    StorageArea --> Position
     View --> ViewConnection
 ```
 
@@ -130,10 +139,11 @@ sequenceDiagram
     Viewer->>State: Update Loading State
     State->>UI: Render Viewer
     
-    UI->>Viewer: Create Hotspot
-    Viewer->>State: Add Hotspot
-    State->>Storage: Save Hotspot
-    Storage->>UI: Update UI
+    UI->>Viewer: Click Storage Area
+    Viewer->>State: Get Storage Area Data
+    State->>Storage: Load Open Image
+    Storage->>Viewer: Return Open Image
+    Viewer->>UI: Display Open Storage Area
 ```
 
 ## Data Flow
@@ -150,20 +160,24 @@ graph LR
     F --> G
 ```
 
-### Hotspot Management
+### Storage Area Management
 ```mermaid
 graph TD
-    A[Create Hotspot] --> B[Validate Position]
+    A[Create Storage Area] --> B[Validate Position]
     B --> C[Create Data]
     C --> D[Save to IndexedDB]
     D --> E[Update State]
     E --> F[Update UI]
     
-    G[Edit Hotspot] --> H[Load from IndexedDB]
+    G[Edit Storage Area] --> H[Load from IndexedDB]
     H --> I[Update Data]
     I --> J[Save to IndexedDB]
     J --> K[Update State]
     K --> L[Update UI]
+    
+    M[View Storage Area] --> N[Load Open Image]
+    N --> O[Display Open State]
+    O --> P[Return to Closed State]
 ```
 
 ## Implementation Details
@@ -172,7 +186,8 @@ graph TD
 ```mermaid
 erDiagram
     ROOMS ||--o{ VIEWS : contains
-    VIEWS ||--o{ HOTSPOTS : contains
+    VIEWS ||--o{ STORAGE_AREAS : contains
+    VIEWS ||--o{ VIEW_CONNECTIONS : has
     
     ROOMS {
         string id PK
@@ -191,19 +206,28 @@ erDiagram
         string description
         string imageUrl
         json position
-        json connections
         timestamp created
         timestamp updated
     }
     
-    HOTSPOTS {
+    STORAGE_AREAS {
         string id PK
         string viewId FK
         string name
+        string type
         string description
         json position
+        string openImageUrl
         timestamp created
         timestamp updated
+    }
+    
+    VIEW_CONNECTIONS {
+        string id PK
+        string sourceViewId FK
+        string targetViewId FK
+        json position
+        string type
     }
 ```
 
@@ -213,7 +237,7 @@ src/
 ├── components/
 │   ├── viewer/
 │   │   ├── Viewer.tsx
-│   │   ├── HotspotManager.tsx
+│   │   ├── StorageAreaManager.tsx
 │   │   └── Controls.tsx
 │   ├── layout/
 │   │   ├── AppBar.tsx
@@ -229,12 +253,12 @@ src/
 │   │   │   ├── ViewCreationDialog.tsx
 │   │   │   ├── ViewUploadStep.tsx
 │   │   │   └── ViewConnectionsStep.tsx
-│   │   └── HotspotCreation/
-│   │       ├── HotspotCreationDialog.tsx
-│   │       ├── HotspotTypeStep.tsx
-│   │       ├── HotspotPlacementStep.tsx
-│   │       ├── HotspotConfigStep.tsx
-│   │       └── HotspotContentStep.tsx
+│   │   └── StorageAreaCreation/
+│   │       ├── StorageAreaCreationDialog.tsx
+│   │       ├── StorageAreaTypeStep.tsx
+│   │       ├── StorageAreaPlacementStep.tsx
+│   │       ├── StorageAreaConfigStep.tsx
+│   │       └── StorageAreaImageStep.tsx
 │   └── common/
 │       ├── Button.tsx
 │       ├── Input.tsx
@@ -243,26 +267,26 @@ src/
 ├── hooks/
 │   ├── useStorage.ts
 │   ├── useViewer.ts
-│   ├── useHotspots.ts
+│   ├── useStorageAreas.ts
 │   ├── useRoomCreation.ts
 │   ├── useViewCreation.ts
-│   └── useHotspotCreation.ts
+│   └── useStorageAreaCreation.ts
 ├── services/
 │   ├── storage/
 │   │   └── IndexedDB.ts
 │   └── viewer/
 │       ├── ViewerService.ts
-│       └── HotspotService.ts
+│       └── StorageAreaService.ts
 ├── types/
 │   ├── Room.ts
 │   ├── View.ts
-│   ├── Hotspot.ts
-│   └── Item.ts
+│   ├── StorageArea.ts
+│   └── Position.ts
 └── context/
     ├── AppContext.tsx
     ├── ViewerContext.tsx
     ├── CreationContext.tsx
-    └── HotspotContext.tsx
+    └── StorageAreaContext.tsx
 ```
 
 ## New Features Implementation
@@ -309,7 +333,7 @@ sequenceDiagram
     Storage->>UI: Update Room Views
 ```
 
-### Hotspot Creation Flow
+### Storage Area Creation Flow
 ```mermaid
 sequenceDiagram
     participant UI
@@ -317,14 +341,17 @@ sequenceDiagram
     participant Viewer
     participant Storage
     
-    UI->>Creation: Start Hotspot Creation
+    UI->>Creation: Start Storage Area Creation
     Creation->>UI: Show Type Selection
     UI->>Creation: Select Type
     Creation->>Viewer: Enable Placement Mode
-    UI->>Viewer: Place Hotspot
+    UI->>Viewer: Place Storage Area
     Viewer->>Creation: Return Position
+    UI->>Creation: Upload Open Image
+    Creation->>Storage: Store Open Image
+    Storage->>Creation: Return Blob Key
     UI->>Creation: Configure Properties
-    Creation->>Storage: Save Hotspot
+    Creation->>Storage: Save Storage Area
     Storage->>UI: Update View
 ```
 
@@ -367,16 +394,16 @@ graph TD
     A --> C[IndexedDB]
     
     D[Component Tests] --> E[Viewer]
-    D --> F[HotspotManager]
+    D --> F[StorageAreaManager]
     D --> G[Controls]
     D --> H[Creation Components]
     
     I[Hook Tests] --> J[useStorage]
     I --> K[useViewer]
-    I --> L[useHotspots]
+    I --> L[useStorageAreas]
     I --> M[useRoomCreation]
     I --> N[useViewCreation]
-    I --> O[useHotspotCreation]
+    I --> O[useStorageAreaCreation]
 ```
 
 ### Integration Tests
@@ -401,10 +428,10 @@ sequenceDiagram
     UI->>Viewer: Load View
     Viewer->>Test: Verify Display
     
-    Test->>UI: Add Hotspot
-    UI->>Storage: Save Hotspot
+    Test->>UI: Add Storage Area
+    UI->>Storage: Save Storage Area
     Storage->>UI: Confirm Save
-    UI->>Viewer: Load Hotspot
+    UI->>Viewer: Load Storage Area
     Viewer->>Test: Verify Display
 ```
 
@@ -414,6 +441,6 @@ sequenceDiagram
 3. Create core viewer component
 4. Implement room creation flow
 5. Add view creation functionality
-6. Add hotspot creation and management
+6. Add storage area creation and management
 7. Implement basic UI components
 8. Set up testing infrastructure 
