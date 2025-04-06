@@ -3,270 +3,28 @@
 ## Overview
 This document outlines the implementation details for Phase 1 of the Kitchen 360° Organizer, focusing on creating a functional prototype with local storage and blob storage for images.
 
-## Architecture Diagram
+## Core Components
 
-```mermaid
-graph TD
-    A[User Interface] --> B[Viewer Component]
-    A --> C[Storage Manager]
-    A --> D[State Manager]
-    
-    B --> E[Photo Sphere Viewer]
-    B --> F[Storage Area Manager]
-    B --> G[View Navigation]
-    
-    C --> H[LocalStorage Adapter]
-    C --> I[IndexedDB Adapter]
-    
-    D --> J[React Context]
-    D --> K[Custom Hooks]
-    
-    E --> L[Core Viewer]
-    E --> M[Basic Plugins]
-    
-    F --> N[Storage Area Creation]
-    F --> O[Storage Area Editing]
-    F --> P[Open/Close States]
-    
-    G --> Q[View Transitions]
-    G --> R[View Connections]
-```
-
-## Component Architecture
-
-### Core Relationships
-```mermaid
-graph TD
-    subgraph Room
-        R[Room] --> V1[View 1]
-        R --> V2[View 2]
-        R --> V3[View 3]
-    end
-
-    subgraph View 1
-        V1 --> SA1[Storage Area 1]
-        V1 --> SA2[Storage Area 2]
-        V1 --> VC1[View Connection]
-    end
-
-    subgraph View 2
-        V2 --> SA3[Storage Area 3]
-        V2 --> SA4[Storage Area 4]
-        V2 --> VC2[View Connection]
-    end
-
-    subgraph View 3
-        V3 --> SA5[Storage Area 5]
-        V3 --> SA6[Storage Area 6]
-        V3 --> VC3[View Connection]
-    end
-
-    VC1 --> V2
-    VC2 --> V3
-    VC3 --> V1
-
-    style Room fill:#f9f,stroke:#333,stroke-width:2px
-    style View 1 fill:#bbf,stroke:#333,stroke-width:2px
-    style View 2 fill:#bbf,stroke:#333,stroke-width:2px
-    style View 3 fill:#bbf,stroke:#333,stroke-width:2px
-```
-
-### Storage Layer
-```mermaid
-classDiagram
-    class StorageManager {
-        +getMetadata(key: string)
-        +setMetadata(key: string, value: any)
-        +createBlobUrl(blob: Blob)
-        +revokeBlobUrl(url: string)
-        +delete(key: string)
-        +getAllKeys()
-    }
-    
-    class IndexedDBAdapter {
-        +get(key: string)
-        +set(key: string, value: any)
-        +delete(key: string)
-        +getAllKeys()
-    }
-    
-    StorageManager --> IndexedDBAdapter
-```
+### Storage Manager
+The storage manager handles all data persistence using IndexedDB. See [IndexedDB Implementation](../src/services/storage/indexedDB.ts) for details.
 
 ### State Management
-```mermaid
-classDiagram
-    class AppState {
-        +currentRoom: Room
-        +currentView: View
-        +storageAreas: StorageArea[]
-        +isEditing: boolean
-        +blobUrls: Map<string, string>
-    }
-    
-    class Room {
-        +id: string
-        +name: string
-        +type: RoomType
-        +description: string
-        +layoutType: RoomLayoutType
-        +views: View[]
-        +createdAt: Date
-        +updatedAt: Date
-    }
-    
-    class View {
-        +id: string
-        +roomId: string
-        +name: string
-        +description: string
-        +imageUrl: string
-        +position: Position
-        +storageAreas: StorageArea[]
-        +connections: ViewConnection[]
-        +createdAt: Date
-        +updatedAt: Date
-    }
-    
-    class StorageArea {
-        +id: string
-        +viewId: string
-        +name: string
-        +type: StorageAreaType
-        +description: string
-        +position: Position
-        +openImageUrl: string
-        +createdAt: Date
-        +updatedAt: Date
-    }
-    
-    class Position {
-        +longitude: number
-        +latitude: number
-        +zoom: number
-    }
-    
-    class ViewConnection {
-        +targetViewId: string
-        +position: Position
-        +type: ViewConnectionType
-    }
-    
-    AppState --> Room
-    AppState --> View
-    AppState --> StorageArea
-    View --> Position
-    StorageArea --> Position
-    View --> ViewConnection
-```
+- React Context for global state
+- Custom hooks for data management
+- Local storage for persistence
 
 ### Viewer Integration
-```mermaid
-sequenceDiagram
-    participant UI
-    participant Viewer
-    participant Storage
-    participant State
-    
-    UI->>Viewer: Initialize
-    Viewer->>Storage: Load Image Metadata
-    Storage->>Viewer: Return Metadata
-    Viewer->>State: Create Blob URL
-    State->>Viewer: Provide Blob URL
-    Viewer->>State: Update Loading State
-    State->>UI: Render Viewer
-    
-    UI->>Viewer: Click Storage Area
-    Viewer->>State: Get Storage Area Data
-    State->>Storage: Load Open Image
-    Storage->>Viewer: Return Open Image
-    Viewer->>UI: Display Open Storage Area
-```
-
-## Data Flow
-
-### Image Loading
-```mermaid
-graph LR
-    A[User Action] --> B[Load Image]
-    B --> C[Check Blob URL Cache]
-    C -->|Cache Hit| D[Use Existing URL]
-    C -->|Cache Miss| E[Create New Blob URL]
-    E --> F[Store in State]
-    D --> G[Display in Viewer]
-    F --> G
-```
-
-### Storage Area Management
-```mermaid
-graph TD
-    A[Create Storage Area] --> B[Validate Position]
-    B --> C[Create Data]
-    C --> D[Save to IndexedDB]
-    D --> E[Update State]
-    E --> F[Update UI]
-    
-    G[Edit Storage Area] --> H[Load from IndexedDB]
-    H --> I[Update Data]
-    I --> J[Save to IndexedDB]
-    J --> K[Update State]
-    K --> L[Update UI]
-    
-    M[View Storage Area] --> N[Load Open Image]
-    N --> O[Display Open State]
-    O --> P[Return to Closed State]
-```
+- Photo Sphere Viewer for 360° image display
+- Local blob storage for images
+- Basic plugin integration
 
 ## Implementation Details
 
 ### Storage Structure
-```mermaid
-erDiagram
-    ROOMS ||--o{ VIEWS : contains
-    VIEWS ||--o{ STORAGE_AREAS : contains
-    VIEWS ||--o{ VIEW_CONNECTIONS : has
-    
-    ROOMS {
-        string id PK
-        string name
-        string type
-        string description
-        string layoutType
-        timestamp created
-        timestamp updated
-    }
-    
-    VIEWS {
-        string id PK
-        string roomId FK
-        string name
-        string description
-        string imageUrl
-        json position
-        timestamp created
-        timestamp updated
-    }
-    
-    STORAGE_AREAS {
-        string id PK
-        string viewId FK
-        string name
-        string type
-        string description
-        json position
-        string openImageUrl
-        timestamp created
-        timestamp updated
-    }
-    
-    VIEW_CONNECTIONS {
-        string id PK
-        string sourceViewId FK
-        string targetViewId FK
-        json position
-        string type
-    }
-```
+The storage structure follows our [Data Models](../architecture/data-models/README.md) documentation. All data is stored in IndexedDB with the following structure:
+- [Room](../src/types/Room.ts)
+- [View](../src/types/View.ts) 
+- [StorageArea](../src/types/StorageArea.ts)
 
 ### File Structure
 ```
@@ -309,11 +67,8 @@ src/
 │   ├── useViewCreation.ts
 │   └── useStorageAreaCreation.ts
 ├── services/
-│   ├── storage/
-│   │   └── IndexedDB.ts
-│   └── viewer/
-│       ├── ViewerService.ts
-│       └── StorageAreaService.ts
+│   └── storage/
+│       └── indexedDB.ts
 ├── types/
 │   ├── Room.ts
 │   ├── View.ts
@@ -326,158 +81,71 @@ src/
     └── StorageAreaContext.tsx
 ```
 
-## New Features Implementation
+## Implementation Flows
+
+For detailed flow diagrams, see our [System Flows](../architecture/flows/README.md) documentation.
 
 ### Room Creation Flow
-```mermaid
-sequenceDiagram
-    participant UI
-    participant Creation
-    participant Storage
-    participant State
-    
-    UI->>Creation: Start Room Creation
-    Creation->>UI: Show Stepper
-    UI->>Creation: Enter Room Details
-    Creation->>Storage: Validate Name
-    Storage->>Creation: Return Validation
-    UI->>Creation: Upload Initial View
-    Creation->>Storage: Store Image
-    Storage->>Creation: Return Blob Key
-    UI->>Creation: Configure Storage Areas
-    Creation->>Storage: Save Room
-    Storage->>State: Update Current Room
-    State->>UI: Update Navigation
-```
+See [Room Creation Flow](../architecture/flows/README.md#room-creation-flow) for detailed sequence diagram.
+1. User starts room creation
+2. System validates room details
+3. Room is saved to IndexedDB
+4. Initial view is created and saved
+5. Storage areas are added and saved
 
 ### View Creation Flow
-```mermaid
-sequenceDiagram
-    participant UI
-    participant Creation
-    participant Storage
-    participant Viewer
-    
-    UI->>Creation: Start View Creation
-    Creation->>UI: Show Dialog
-    UI->>Creation: Upload 360° Image
-    Creation->>Storage: Store Image
-    Storage->>Creation: Return Blob Key
-    UI->>Creation: Configure Position
-    Creation->>Viewer: Preview Position
-    UI->>Creation: Save View
-    Creation->>Storage: Save View
-    Storage->>UI: Update Room Views
-```
+See [View Creation Flow](../architecture/flows/README.md#view-creation-flow) for detailed sequence diagram.
+1. User uploads 360° image
+2. Image is stored as blob in IndexedDB
+3. View details are saved
+4. View connections are configured
+5. View is added to room
 
 ### Storage Area Creation Flow
-```mermaid
-sequenceDiagram
-    participant UI
-    participant Creation
-    participant Viewer
-    participant Storage
-    
-    UI->>Creation: Start Storage Area Creation
-    Creation->>UI: Show Type Selection
-    UI->>Creation: Select Type
-    Creation->>Viewer: Enable Placement Mode
-    UI->>Viewer: Place Storage Area
-    Viewer->>Creation: Return Position
-    UI->>Creation: Upload Open Image
-    Creation->>Storage: Store Open Image
-    Storage->>Creation: Return Blob Key
-    UI->>Creation: Configure Properties
-    Creation->>Storage: Save Storage Area
-    Storage->>UI: Update View
-```
+See [Storage Area Creation Flow](../architecture/flows/README.md#storage-area-creation-flow) for detailed sequence diagram.
+1. User selects position in view
+2. Storage area image is uploaded and stored
+3. Storage area details are saved
+4. Marker is added to view
+
+### Image Management
+See [Image Management Flow](../architecture/flows/README.md#image-management-flow) for detailed flow diagram.
+- Images are stored as blobs in IndexedDB
+- Blob URLs are cached in memory
+- Unused blob URLs are revoked
+- Memory usage is monitored
 
 ## Performance Considerations
 
 ### Blob Management
-```mermaid
-graph TD
-    A[Image Upload] --> B[Create Blob URL]
-    B --> C[Store in State]
-    C --> D[Update Viewer]
-    
-    E[Cleanup] --> F[Revoke Unused URLs]
-    F --> G[Clear Memory]
-    
-    H[Memory Management] --> I[Track Usage]
-    I --> J[Revoke Old URLs]
-    J --> K[Free Memory]
-```
+- Images are stored as blobs in IndexedDB
+- Blob URLs are cached in memory
+- Unused blob URLs are revoked
+- Memory usage is monitored
 
 ### State Management
-```mermaid
-graph LR
-    A[User Action] --> B[Update State]
-    B --> C[Persist Metadata]
-    C --> D[Update UI]
-    
-    E[Load Data] --> F[Check Memory]
-    F -->|Memory Hit| G[Use Memory]
-    F -->|Memory Miss| H[Load from IndexedDB]
-    H --> I[Update Memory]
-```
+- State is persisted to IndexedDB
+- Frequent updates are batched
+- Memory state is kept in sync with storage
 
 ## Testing Strategy
 
 ### Unit Tests
-```mermaid
-graph TD
-    A[Storage Tests] --> B[LocalStorage]
-    A --> C[IndexedDB]
-    
-    D[Component Tests] --> E[Viewer]
-    D --> F[StorageAreaManager]
-    D --> G[Controls]
-    D --> H[Creation Components]
-    
-    I[Hook Tests] --> J[useStorage]
-    I --> K[useViewer]
-    I --> L[useStorageAreas]
-    I --> M[useRoomCreation]
-    I --> N[useViewCreation]
-    I --> O[useStorageAreaCreation]
-```
+- Storage adapter tests
+- Component tests
+- Hook tests
+- Utility function tests
 
 ### Integration Tests
-```mermaid
-sequenceDiagram
-    participant Test
-    participant UI
-    participant Storage
-    participant Viewer
-    
-    Test->>UI: Create Room
-    UI->>Storage: Save Room
-    Storage->>UI: Confirm Save
-    UI->>Viewer: Load Room
-    Viewer->>Storage: Load Image
-    Storage->>Viewer: Return Image
-    Viewer->>Test: Verify Display
-    
-    Test->>UI: Add View
-    UI->>Storage: Save View
-    Storage->>UI: Confirm Save
-    UI->>Viewer: Load View
-    Viewer->>Test: Verify Display
-    
-    Test->>UI: Add Storage Area
-    UI->>Storage: Save Storage Area
-    Storage->>UI: Confirm Save
-    UI->>Viewer: Load Storage Area
-    Viewer->>Test: Verify Display
-```
+- Room creation flow
+- View creation flow
+- Storage area management
+- Image handling
 
 ## Next Steps
-1. Set up project structure
-2. Implement basic storage adapters
-3. Create core viewer component
-4. Implement room creation flow
-5. Add view creation functionality
-6. Add storage area creation and management
-7. Implement basic UI components
-8. Set up testing infrastructure 
+1. Implement basic storage adapters
+2. Create core viewer component
+3. Implement room creation flow
+4. Add view creation functionality
+5. Add storage area creation and management
+6. Set up testing infrastructure 
