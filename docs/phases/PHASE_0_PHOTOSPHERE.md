@@ -27,6 +27,17 @@ public/
     └── 360-photos/
 ```
 
+### Local Development Setup
+To run the application locally and avoid CORS issues:
+1. Navigate to the `public` directory
+2. Start a local HTTP server using Python:
+   ```bash
+   python3 -m http.server 8000
+   ```
+3. Access the application at `http://localhost:8000`
+
+Note: The local server is required because browsers block direct file access to prevent security issues. This setup allows proper loading of 360° images and other resources.
+
 ### Key Features
 1. Single 360° image display
 2. Click-to-add marker functionality
