@@ -1,5 +1,16 @@
 # Unit Testing Guide
 
+## Table of Contents
+- [Testing Tools](#testing-tools)
+- [Testing Commands](#testing-commands)
+- [Unit Testing Best Practices](#unit-testing-best-practices)
+  - [Component Testing](#component-testing)
+  - [Mocking Strategy](#mocking-strategy)
+- [Test Directory Structure](#test-directory-structure)
+- [Test Categories](#test-categories)
+- [Guidelines](#guidelines)
+- [Integration Testing vs Unit Testing](#integration-testing-vs-unit-testing)
+
 This guide outlines the unit testing strategy for the Kitchen 360° Organizer project, focusing on isolated component testing.
 
 ## Testing Tools
@@ -51,6 +62,63 @@ This guide outlines the unit testing strategy for the Kitchen 360° Organizer pr
    - Tests should not rely on external state
    - Clear mocks between tests
    - Avoid testing implementation details
+
+## Test Directory Structure
+
+We follow a co-located test directory structure, placing `__tests__` folders within each feature area to keep tests close to their source code:
+
+```
+src/
+├── components/
+│   ├── __tests__/
+│   │   ├── Button.test.tsx
+│   │   └── Card.test.tsx
+│   ├── Button.tsx
+│   └── Card.tsx
+├── hooks/
+│   ├── __tests__/
+│   │   └── useAuth.test.ts
+│   └── useAuth.ts
+├── services/
+│   ├── __tests__/
+│   │   └── api.test.ts
+│   └── api.ts
+├── utils/
+│   ├── __tests__/
+│   │   └── helpers.test.ts
+│   └── helpers.ts
+└── context/
+    ├── __tests__/
+    │   └── AppContext.test.tsx
+    └── AppContext.tsx
+```
+
+### Naming Conventions
+- Test files should mirror their source files with a `.test.tsx` or `.test.ts` suffix
+- Test utilities should be clearly marked (e.g., `test-utils.tsx`)
+- Mock files should match their original file names (e.g., `Button.mock.tsx`)
+
+### Test File Organization
+Each test file should follow this general structure:
+```typescript
+import { render, screen } from '@testing-library/react';
+import { ComponentName } from '../ComponentName';
+
+describe('ComponentName', () => {
+  // Group related tests
+  describe('rendering', () => {
+    it('renders default state', () => {
+      // ...
+    });
+  });
+
+  describe('interactions', () => {
+    it('handles user input', () => {
+      // ...
+    });
+  });
+});
+```
 
 ## Test Categories
 
