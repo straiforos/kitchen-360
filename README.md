@@ -33,7 +33,7 @@ npm run dev
 
 ## Documentation
 
-For detailed documentation, including architecture, development roadmap, and implementation guides, please see our [Development Roadmap](docs/DEVELOPMENT_ROADMAP.md).
+For detailed documentation, including architecture, development roadmap, and implementation guides, please see our [Development Roadmap](docs/DEVELOPMENT_ROADMAP.md) and [Architecture Documentation](docs/architecture/OVERVIEW.md).
 
 ## Development
 
