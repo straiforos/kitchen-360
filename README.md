@@ -47,15 +47,25 @@ For detailed documentation, including architecture, development roadmap, and imp
 kitchen-360/
 ├── src/              # Source code
 │   ├── components/   # React components
+│   │   ├── __tests__/  # Component unit tests
+│   │   └── *.tsx    # Component files
 │   ├── context/      # React context providers
+│   │   ├── __tests__/  # Context unit tests
+│   │   └── *.tsx    # Context files
 │   ├── hooks/        # Custom React hooks
+│   │   ├── __tests__/  # Hook unit tests
+│   │   └── *.ts     # Hook files
 │   ├── services/     # Service layer (storage, API)
+│   │   ├── __tests__/  # Service unit tests
+│   │   └── *.ts     # Service files
 │   ├── types/        # TypeScript type definitions
-│   ├── tests/        # Test files
+│   ├── utils/        # Utility functions
+│   │   ├── __tests__/  # Utility unit tests
+│   │   └── *.ts     # Utility files
 │   └── mocks/        # Test mocks
 ├── public/           # Static assets
 ├── docs/             # Documentation
-└── tests/            # Test files
+└── tests/            # Integration tests
 ```
 
 ### Scripts
