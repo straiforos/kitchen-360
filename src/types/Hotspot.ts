@@ -1,3 +1,4 @@
+import { MarkerType } from '@photo-sphere-viewer/markers-plugin';
 import { Position } from './Position';
 
 /**
@@ -13,4 +14,6 @@ export interface Hotspot {
   position: Position;
   /** Optional description providing more information about the hotspot */
   description?: string;
+  type: MarkerType,
+  html: string
 } 

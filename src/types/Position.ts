@@ -1,11 +1,9 @@
+import { SphericalPosition } from "@photo-sphere-viewer/core";
+
 /**
  * Represents a position in 3D space, used for both views and storage areas
  */
-export interface Position {
-  /** Longitude coordinate (horizontal rotation) */
-  longitude: number;
-  /** Latitude coordinate (vertical rotation) */
-  latitude: number;
+export interface Position extends SphericalPosition {
   /** Zoom level */
-  zoom: number;
+  zoom?: number;
 } 

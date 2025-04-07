@@ -3,7 +3,7 @@ import {
   Viewer as PhotoSphereViewer,
   ClickData
 } from "@photo-sphere-viewer/core";
-import { MarkersPlugin } from "@photo-sphere-viewer/markers-plugin";
+import { Marker, MarkersPlugin } from "@photo-sphere-viewer/markers-plugin";
 import "@photo-sphere-viewer/core/index.css";
 import "@photo-sphere-viewer/markers-plugin/index.css";
 import { Hotspot, Position } from "../../types";
@@ -12,6 +12,7 @@ interface ViewerProps {
   imageUrl: string;
   position: Position;
   hotspots: Hotspot[];
+  markers: Marker[];
   onHotspotClick: (hotspot: Hotspot) => void;
   onClick: (data: ClickData) => void;
 }
@@ -68,17 +69,10 @@ export const Viewer: React.FC<ViewerProps> = ({
     if (markersPlugin) {
       const markers = hotspots?.map((hotspot) => ({
         id: hotspot.id,
-        longitude: hotspot.position?.longitude ?? 0,
-        latitude: hotspot.position?.latitude ?? 0,
-        html: hotspot.name,
-        anchor: "bottom center",
-        style: {
-          color: "white",
-          backgroundColor: "rgba(0, 0, 0, 0.5)",
-          padding: "4px 8px",
-          borderRadius: "4px",
-        },
-      }));
+        position: hotspot.position,
+        type: hotspot.type,
+        html: hotspot.html
+    }));
       markersPlugin.clearMarkers();
       markers?.forEach((marker) => markersPlugin.addMarker(marker));
     }
@@ -89,8 +83,8 @@ export const Viewer: React.FC<ViewerProps> = ({
       ref={containerRef}
       data-testid="viewer-container"
       style={{
-        width: "100%",
-        height: "100%",
+        width: "100vw",
+        height: "100vh",
       }}
     />
   );
