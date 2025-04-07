@@ -5,13 +5,13 @@ import {
   StepLabel,
   Box,
   Button,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
+  Card,
+  CardHeader,
+  CardContent,
+  CardActions,
+  Typography,
 } from '@mui/material';
 import { RoomCreationData } from '@types';
-import { ViewCreationData } from '@types';
 import { RoomDetailsStep } from './RoomDetailsStep';
 import { InitialViewStep } from './InitialViewStep';
 import { StorageAreasStep } from './StorageAreasStep';
@@ -20,11 +20,11 @@ import { useRoomCreation } from '@hooks/useRoomCreation';
 const steps = ['Room Details', 'Initial View', 'Storage Areas'];
 
 export const RoomCreationStepper: React.FC<{
-  open: boolean;
-  onClose: () => void;
   onSave: (roomData: RoomCreationData) => void;
-}> = ({ open, onClose, onSave }) => {
-  const [activeStep, setActiveStep] = useState(0);
+  onCancel: () => void;
+  initialStep?: number;
+}> = ({ onSave, onCancel, initialStep = 0 }) => {
+  const [activeStep, setActiveStep] = useState(initialStep);
   const { roomData, updateRoomData, updateInitialView } = useRoomCreation();
 
   const handleNext = () => {
@@ -37,7 +37,6 @@ export const RoomCreationStepper: React.FC<{
 
   const handleSave = () => {
     onSave(roomData);
-    onClose();
   };
 
   const getStepContent = (step: number) => {
@@ -69,9 +68,12 @@ export const RoomCreationStepper: React.FC<{
   };
 
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
-      <DialogTitle>Create New Room</DialogTitle>
-      <DialogContent>
+    <Card sx={{ maxWidth: 800, width: '100%' }}>
+      <CardHeader
+        title="Create New Room"
+        subheader={`Step ${activeStep + 1} of ${steps.length}`}
+      />
+      <CardContent>
         <Stepper activeStep={activeStep} sx={{ mb: 4 }}>
           {steps.map((label) => (
             <Step key={label}>
@@ -80,9 +82,9 @@ export const RoomCreationStepper: React.FC<{
           ))}
         </Stepper>
         <Box sx={{ mt: 2 }}>{getStepContent(activeStep)}</Box>
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={onClose}>Cancel</Button>
+      </CardContent>
+      <CardActions sx={{ justifyContent: 'flex-end', p: 2 }}>
+        <Button onClick={onCancel}>Cancel</Button>
         <Button onClick={handleBack} disabled={activeStep === 0}>
           Back
         </Button>
@@ -95,7 +97,7 @@ export const RoomCreationStepper: React.FC<{
             Next
           </Button>
         )}
-      </DialogActions>
-    </Dialog>
+      </CardActions>
+    </Card>
   );
 }; 
