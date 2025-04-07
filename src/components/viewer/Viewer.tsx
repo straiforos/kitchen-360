@@ -6,26 +6,26 @@ import { MarkersPlugin } from "@photo-sphere-viewer/markers-plugin";
 import "@photo-sphere-viewer/core/index.css";
 import "@photo-sphere-viewer/markers-plugin/index.css";
 import { Hotspot, Position } from "../../types";
-import { HotspotForm } from "../hotspot/HotspotForm";
+import { StorageAreaStepper } from "../creation/RoomCreation/StorageAreaStepper";
+import { StorageAreaCreationData } from "../../types/StorageArea";
+import { Dialog } from "@mui/material";
 import "./Viewer.css";
 
 interface ViewerProps {
   imageUrl: string;
   hotspots: Hotspot[];
   onHotspotClick: (hotspot: Hotspot) => void;
-  onHotspotCreate: (hotspot: Omit<Hotspot, 'id'>) => void;
+  onStorageAreaCreate: (position: Position) => void;
 }
 
 /**
  * Panorama Viewer with marker creation on click
- * @param param0 
- * @returns 
  */
 export const Viewer: React.FC<ViewerProps> = ({
   imageUrl,
   hotspots,
   onHotspotClick,
-  onHotspotCreate,
+  onStorageAreaCreate,
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const viewerRef = useRef<PhotoSphereViewer | null>(null);
@@ -88,8 +88,18 @@ export const Viewer: React.FC<ViewerProps> = ({
     }
   }, [hotspots]);
 
-  const handleHotspotSubmit = (hotspot: Omit<Hotspot, 'id'>) => {
-    onHotspotCreate(hotspot);
+  const handleStorageAreaComplete = (area: Partial<StorageAreaCreationData>, _image?: File) => {
+    if (selectedPosition && viewerRef.current) {      
+      // Add marker to the viewer
+      const markersPlugin = viewerRef.current.getPlugin<MarkersPlugin>(MarkersPlugin);
+      if (markersPlugin) {
+        markersPlugin.addMarker({
+          id: `storage-${Date.now()}`,
+          position: selectedPosition,
+          html: `<div class="storage-marker">${area.name || 'Storage Area'}</div>`
+        });
+      }
+    }
     setSelectedPosition(null);
   };
 
@@ -103,13 +113,19 @@ export const Viewer: React.FC<ViewerProps> = ({
           height: "100vh",
         }}
       />
-      {selectedPosition && (
-        <HotspotForm
-          position={selectedPosition}
-          onSubmit={handleHotspotSubmit}
+      <Dialog
+        open={!!selectedPosition}
+        onClose={() => setSelectedPosition(null)}
+        maxWidth="md"
+        fullWidth
+        sx={{ '& .MuiDialog-paper': { p: 3 } }}
+      >
+        <StorageAreaStepper
+          onComplete={handleStorageAreaComplete}
           onCancel={() => setSelectedPosition(null)}
+          initialArea={selectedPosition ? { position: selectedPosition } : undefined}
         />
-      )}
+      </Dialog>
     </div>
   );
 };

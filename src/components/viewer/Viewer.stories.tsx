@@ -1,7 +1,9 @@
 import type { Meta, StoryObj } from "@storybook/react";
+import { userEvent } from '@storybook/test';
 import { Viewer } from "./Viewer";
-import { Hotspot, Position } from "../../types";
+import { Hotspot } from "../../types";
 import { MarkerType } from "@photo-sphere-viewer/markers-plugin";
+import { within } from "@testing-library/react";
 
 const meta: Meta<typeof Viewer> = {
   title: "Components/Viewer",
@@ -15,10 +17,6 @@ const meta: Meta<typeof Viewer> = {
       control: "text",
       description: "URL of the 360° panorama image",
     },
-    position: {
-      control: "object",
-      description: "Initial position of the viewer",
-    },
     hotspots: {
       control: "object",
       description: "Array of hotspots to display",
@@ -27,8 +25,8 @@ const meta: Meta<typeof Viewer> = {
       action: "hotspot clicked",
       description: "Callback when a hotspot is clicked",
     },
-    onClick: {
-      action: "viewer clicked",
+    onHotspotCreate: {
+      action: "Create hotspot when viewer clicked",
       description: "Callback when the viewer is clicked",
     },
   },
@@ -36,11 +34,6 @@ const meta: Meta<typeof Viewer> = {
 
 export default meta;
 type Story = StoryObj<typeof Viewer>;
-
-const defaultPosition: Position = {
-  pitch: 0,
-  yaw: 0,
-};
 
 const defaultHotspots: Hotspot[] = [
   {
@@ -57,7 +50,6 @@ const imageUrl = "./public/top_cabinets.jpg";
 export const Default: Story = {
   args: {
     imageUrl,
-    position: defaultPosition,
     hotspots: defaultHotspots,
   },
 };
@@ -65,7 +57,34 @@ export const Default: Story = {
 export const NoHotspots: Story = {
   args: {
     imageUrl,
-    position: defaultPosition,
     hotspots: [],
+  },
+};
+
+export const WithHotspotCreation: Story = {
+  args: {
+    imageUrl,
+    hotspots: [],
+    onHotspotCreate: (position) => {
+      console.log('Hotspot created at position:', position);
+    },
+  },
+  play: async ({ canvasElement, step }) => {
+    const canvas = within(canvasElement);
+    const viewer = await canvas.findByTestId('viewer-container');
+
+    userEvent.click(viewer);
+
+    // Verify the form is present
+    const form = canvasElement.querySelector('.hotspot-form');
+    if (!form) {
+      throw new Error('Hotspot form did not appear after clicking');
+    }
+
+    // Verify the form title
+    const formTitle = form.querySelector('h2');
+    if (!formTitle || formTitle.textContent !== 'Create Hotspot') {
+      throw new Error('Hotspot form title is incorrect');
+    }
   },
 };
