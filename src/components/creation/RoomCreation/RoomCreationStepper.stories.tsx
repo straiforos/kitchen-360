@@ -41,7 +41,7 @@ type Story = StoryObj<typeof RoomCreationStepper>;
 
 export const Default: Story = {
   args: {
-    initialStep: 2,
+    initialStep: 0,
     onSave: (roomData: RoomCreationData) => console.log('Room saved:', roomData),
     onCancel: () => console.log('Creation cancelled'),
   },
