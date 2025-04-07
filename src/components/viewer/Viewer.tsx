@@ -3,20 +3,23 @@ import {
   Viewer as PhotoSphereViewer,
   ClickData
 } from "@photo-sphere-viewer/core";
-import { Marker, MarkersPlugin } from "@photo-sphere-viewer/markers-plugin";
+import { MarkersPlugin } from "@photo-sphere-viewer/markers-plugin";
 import "@photo-sphere-viewer/core/index.css";
 import "@photo-sphere-viewer/markers-plugin/index.css";
 import { Hotspot, Position } from "../../types";
 
 interface ViewerProps {
   imageUrl: string;
-  position: Position;
   hotspots: Hotspot[];
-  markers: Marker[];
   onHotspotClick: (hotspot: Hotspot) => void;
   onClick: (data: ClickData) => void;
 }
 
+/**
+ * Panorama Viewer with marker creation on click
+ * @param param0 
+ * @returns 
+ */
 export const Viewer: React.FC<ViewerProps> = ({
   imageUrl,
   hotspots,
