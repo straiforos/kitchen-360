@@ -1,0 +1,117 @@
+<head>
+    <!-- for optimal display on high DPI devices -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@photo-sphere-viewer/core/index.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@photo-sphere-viewer/markers-plugin/index.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+</head>
+
+<div id="viewer" style="width: 100vw; height:100vh;"></div>
+
+<script type="importmap">
+    {
+        "imports": {
+            "three": "https://cdn.jsdelivr.net/npm/three/build/three.module.js",
+            "@photo-sphere-viewer/core": "https://cdn.jsdelivr.net/npm/@photo-sphere-viewer/core/index.module.js",
+            "@photo-sphere-viewer/markers-plugin": "https://cdn.jsdelivr.net/npm/@photo-sphere-viewer/markers-plugin/index.module.js"
+        }
+    }
+</script>
+
+<script type="module">
+    import { Viewer } from '@photo-sphere-viewer/core';
+    import { MarkersPlugin } from '@photo-sphere-viewer/markers-plugin';
+
+    // Create viewer
+    const viewer = new Viewer({
+        container: document.querySelector('#viewer'),
+        // cabinet image 5072 × 1601
+        panorama: './top_cabinets.jpg',
+        plugins: [
+            MarkersPlugin
+        ]
+    });
+
+    // Get marker plugin to add/remove markers
+    const markersPlugin = viewer.getPlugin(MarkersPlugin);
+
+    markersPlugin.addMarker({
+        id: 'salt_sugar',
+        position: { pitch: 0.03444834728612767, yaw: 0.15488413140442567 },
+            type: 'html',
+            html: '<div style="width: 20px; height: 20px; background: red; border-radius: 50%; border: 2px solid white;"></div>'
+    })
+
+    // Add position debugging
+    viewer.addEventListener('position-updated', (e) => {
+        const position = viewer.getPosition();
+        console.log('Current position:', position);
+    });
+
+    // Add click handler to log positions and data available
+    viewer.addEventListener('click', (e) => {
+        const position = viewer.getPosition();
+        console.log('Current view position:', position);
+        
+        // https://photo-sphere-viewer.js.org/api/types/Core.ClickData.html
+        console.log('Event data:', e.data);
+    });
+
+    // Wait for viewer to be ready before adding markers
+    viewer.addEventListener('ready', () => {
+        console.log('Viewer is ready');
+    });
+
+    // Add error handling
+    viewer.addEventListener('error', (error) => {
+        console.error('Viewer error:', error);
+    });
+    
+    /**
+     * Delete a generated marker when the user double-clicks on it
+     * Or change the image if the user right-clicks on it
+     */
+    markersPlugin.addEventListener('select-marker', ({ marker, doubleClick, rightClick }) => {
+        if (marker.data?.generated) {
+            if (doubleClick) {
+                markersPlugin.removeMarker(marker);
+            } else if (rightClick) {
+                markersPlugin.updateMarker({
+                    id: marker.id,
+                    html: '<div style="width: 30px; height: 30px; background: blue; border-radius: 50%; border: 2px solid white;"></div>'
+                });
+            }
+        }
+    });
+</script>
+
+<script type="text/template" id="lorem-content">
+    <h1>HTML Ipsum Presents</h1>
+
+    <p><strong>Pellentesque habitant morbi tristique</strong> senectus et netus et malesuada fames ac turpis egestas.
+      Vestibulum tortor quam, feugiat vitae, ultricies eget, tempor sit amet, ante. Donec eu libero sit amet quam
+      egestas semper. <em>Aenean ultricies mi vitae est.</em> Mauris placerat eleifend leo. Quisque sit amet est et
+      sapien ullamcorper pharetra. Vestibulum erat wisi, condimentum sed, <code>commodo vitae</code>, ornare sit amet,
+      wisi. Aenean fermentum, elit eget tincidunt condimentum, eros ipsum rutrum orci, sagittis tempus lacus enim ac
+      dui. <a href="#">Donec non enim</a> in turpis pulvinar facilisis. Ut felis.</p>
+
+      <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d54469.108394396746!2d6.9617553450295855!3d44.151844842645815!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x12cdaf6678af879d%3A0xcabc15aee7b89386!2sParc%20national%20du%20Mercantour!5e0!3m2!1sfr!2sfr!4v1611498421096!5m2!1sfr!2sfr" width="100%" height="300" frameborder="0" style="border:0;" allowfullscreen="" aria-hidden="false" tabindex="0"></iframe>
+
+    <h2>Header Level 2</h2>
+
+    <ol>
+      <li>Lorem ipsum dolor sit amet, consectetuer adipiscing elit.</li>
+      <li>Aliquam tincidunt mauris eu risus.</li>
+    </ol>
+
+    <blockquote><p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus magna. Cras in mi at felis aliquet
+      congue. Ut a est eget ligula molestie gravida. Curabitur massa. Donec eleifend, libero at sagittis mollis,
+      tellus est malesuada tellus, at luctus turpis elit sit amet quam. Vivamus pretium ornare est.</p></blockquote>
+
+    <h3>Header Level 3</h3>
+
+    <ul>
+      <li>Lorem ipsum dolor sit amet, consectetuer adipiscing elit.</li>
+      <li>Aliquam tincidunt mauris eu risus.</li>
+    </ul>
+</script>

@@ -1,16 +1,18 @@
 import React from "react";
 import { AppProvider } from "./context/AppContext";
-import { createAppTheme } from "./theme";
-import { useApp } from "./context/useApp";
-import { ReactPhotoSphereViewer } from "react-photo-sphere-viewer";
+import { Viewer } from "@components/viewer/Viewer";
 
+/**
+ * 
+ * @returns 360 Photosphere viewer with storage location markers.
+ */
 const AppContent: React.FC = () => {
   return (
-    <ReactPhotoSphereViewer
-      src={'./public/top_cabinets.jpg'}
-      width="100wh"
-      height="100vh"
-    ></ReactPhotoSphereViewer>
+    <Viewer
+      imageUrl="./public/top_cabinets.jpg"
+      onClick={console.log}
+    >
+    </Viewer>
   );
 };
 
