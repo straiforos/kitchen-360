@@ -7,6 +7,7 @@ import { View } from "./types";
 import { useApp } from "./context/useApp";
 import { StorageArea } from "./types/StorageArea";
 import { IndexedDBStorage } from "./services/storage/indexedDB";
+import { ViewStorageArea } from "./pages/ViewStorageArea";
 
 const storage = new IndexedDBStorage();
 
@@ -76,6 +77,7 @@ const App: React.FC = () => {
           <Route path="/" element={<ViewerPage />} />
           <Route path="/storage">
             <Route path="create" element={<StorageAreaCreation />} />
+            <Route path=":id" element={<ViewStorageArea />} />
           </Route>
         </Routes>
       </BrowserRouter>

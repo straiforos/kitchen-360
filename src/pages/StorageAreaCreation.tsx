@@ -24,10 +24,17 @@ export const StorageAreaCreation: React.FC = () => {
   const position = location.state?.position as Position;
   const [error, setError] = useState<string | null>(null);
 
-  const handleComplete = async (area: Partial<StorageAreaCreationData>) => {
+  const handleComplete = async (area: Partial<StorageAreaCreationData>, image?: File) => {
     try {
       if (!area.name || !area.type || !area.description) {
         throw new Error("Missing required storage area fields");
+      }
+
+      let imageUrl = "./default-storage.jpg";
+      if (image) {
+        // Save the image to IndexedDB and get the URL
+        const imageId = `image-${Date.now()}`;
+        imageUrl = await storage.saveImage(imageId, image);
       }
 
       // Create new storage area
@@ -38,7 +45,7 @@ export const StorageAreaCreation: React.FC = () => {
         type: area.type,
         description: area.description,
         position: position || { yaw: 0, pitch: 0, zoom: 50 },
-        imageUrl: area.imageFile ? URL.createObjectURL(area.imageFile) : "./default-storage.jpg",
+        imageUrl,
         createdAt: new Date(),
         updatedAt: new Date(),
       };
