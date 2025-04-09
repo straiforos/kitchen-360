@@ -25,9 +25,9 @@ const meta: Meta<typeof Viewer> = {
       action: "hotspot clicked",
       description: "Callback when a hotspot is clicked",
     },
-    onHotspotCreate: {
-      action: "Create hotspot when viewer clicked",
-      description: "Callback when the viewer is clicked",
+    onStorageAreaCreate: {
+      action: "storage area created",
+      description: "Callback when a storage area is created",
     },
   },
 };
@@ -45,12 +45,14 @@ const defaultHotspots: Hotspot[] = [
   },
 ];
 
-const imageUrl = "./public/top_cabinets.jpg";
+const imageUrl = "./top_cabinets.jpg";
 
 export const Default: Story = {
   args: {
     imageUrl,
     hotspots: defaultHotspots,
+    onHotspotClick: () => {},
+    onStorageAreaCreate: () => {},
   },
 };
 
@@ -58,33 +60,30 @@ export const NoHotspots: Story = {
   args: {
     imageUrl,
     hotspots: [],
+    onHotspotClick: () => {},
+    onStorageAreaCreate: () => {},
   },
 };
 
-export const WithHotspotCreation: Story = {
+export const WithStorageAreaCreation: Story = {
   args: {
     imageUrl,
     hotspots: [],
-    onHotspotCreate: (position) => {
-      console.log('Hotspot created at position:', position);
+    onHotspotClick: () => {},
+    onStorageAreaCreate: (position) => {
+      console.log('Storage area created at position:', position);
     },
   },
-  play: async ({ canvasElement, step }) => {
+  play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
     const viewer = await canvas.findByTestId('viewer-container');
 
     userEvent.click(viewer);
 
-    // Verify the form is present
-    const form = canvasElement.querySelector('.hotspot-form');
-    if (!form) {
-      throw new Error('Hotspot form did not appear after clicking');
-    }
-
-    // Verify the form title
-    const formTitle = form.querySelector('h2');
-    if (!formTitle || formTitle.textContent !== 'Create Hotspot') {
-      throw new Error('Hotspot form title is incorrect');
+    // Verify the stepper is present
+    const stepper = canvasElement.querySelector('.MuiStepper-root');
+    if (!stepper) {
+      throw new Error('Storage area stepper did not appear after clicking');
     }
   },
 };

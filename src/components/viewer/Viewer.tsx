@@ -6,16 +6,17 @@ import { MarkersPlugin } from "@photo-sphere-viewer/markers-plugin";
 import "@photo-sphere-viewer/core/index.css";
 import "@photo-sphere-viewer/markers-plugin/index.css";
 import { Hotspot, Position } from "../../types";
-import { StorageAreaStepper } from "../creation/RoomCreation/StorageAreaStepper";
-import { StorageAreaCreationData } from "../../types/StorageArea";
-import { Dialog } from "@mui/material";
+import { StorageArea } from "../../types/StorageArea";
+import { Dialog, DialogTitle, DialogContent, Typography, Box } from "@mui/material";
+import { StorageArea as StorageAreaComponent } from "../storage/StorageArea";
+import { useNavigate } from "react-router-dom";
 import "./Viewer.css";
 
 interface ViewerProps {
   imageUrl: string;
   hotspots: Hotspot[];
   onHotspotClick: (hotspot: Hotspot) => void;
-  onStorageAreaCreate: (position: Position) => void;
+  storageAreas?: StorageArea[];
 }
 
 /**
@@ -25,11 +26,13 @@ export const Viewer: React.FC<ViewerProps> = ({
   imageUrl,
   hotspots,
   onHotspotClick,
-  onStorageAreaCreate,
+  storageAreas = [],
 }) => {
+  const navigate = useNavigate();
   const containerRef = useRef<HTMLDivElement>(null);
   const viewerRef = useRef<PhotoSphereViewer | null>(null);
-  const [selectedPosition, setSelectedPosition] = useState<Position | null>(null);
+  const [selectedHotspot, setSelectedHotspot] = useState<Hotspot | null>(null);
+  const [selectedStorageArea, setSelectedStorageArea] = useState<StorageArea | null>(null);
 
   useEffect(() => {
     if (!containerRef.current) return;
@@ -49,7 +52,13 @@ export const Viewer: React.FC<ViewerProps> = ({
       markersPlugin.addEventListener("select-marker", ({ marker }) => {
         const hotspot = hotspots.find((h) => h.id === marker.id);
         if (hotspot) {
+          setSelectedHotspot(hotspot);
           onHotspotClick(hotspot);
+        }
+        
+        const storageArea = storageAreas.find((a) => a.id === marker.id);
+        if (storageArea) {
+          setSelectedStorageArea(storageArea);
         }
       });
     }
@@ -60,7 +69,8 @@ export const Viewer: React.FC<ViewerProps> = ({
         pitch: e.data.pitch,
         zoom: viewer.getZoomLevel()
       };
-      setSelectedPosition(position);
+      // Navigate to storage area creation with the position
+      navigate("/storage/create", { state: { position } });
     });
 
     return () => {
@@ -70,6 +80,8 @@ export const Viewer: React.FC<ViewerProps> = ({
     imageUrl,
     hotspots,
     onHotspotClick,
+    storageAreas,
+    navigate,
   ]);
 
   useEffect(() => {
@@ -77,31 +89,27 @@ export const Viewer: React.FC<ViewerProps> = ({
     const markersPlugin =
       viewerRef.current.getPlugin<MarkersPlugin>(MarkersPlugin);
     if (markersPlugin) {
-      const markers = hotspots?.map((hotspot) => ({
+      // Add hotspot markers
+      const hotspotMarkers = hotspots?.map((hotspot) => ({
         id: hotspot.id,
         position: hotspot.position,
         type: hotspot.type,
         html: hotspot.html
       }));
+      
+      // Add storage area markers
+      const storageAreaMarkers = storageAreas?.map((area) => ({
+        id: area.id,
+        position: area.position,
+        html: `<div class="storage-marker">${area.name}</div>`
+      }));
+      
       markersPlugin.clearMarkers();
-      markers?.forEach((marker) => markersPlugin.addMarker(marker));
+      [...hotspotMarkers, ...storageAreaMarkers].forEach((marker) => 
+        markersPlugin.addMarker(marker)
+      );
     }
-  }, [hotspots]);
-
-  const handleStorageAreaComplete = (area: Partial<StorageAreaCreationData>, _image?: File) => {
-    if (selectedPosition && viewerRef.current) {      
-      // Add marker to the viewer
-      const markersPlugin = viewerRef.current.getPlugin<MarkersPlugin>(MarkersPlugin);
-      if (markersPlugin) {
-        markersPlugin.addMarker({
-          id: `storage-${Date.now()}`,
-          position: selectedPosition,
-          html: `<div class="storage-marker">${area.name || 'Storage Area'}</div>`
-        });
-      }
-    }
-    setSelectedPosition(null);
-  };
+  }, [hotspots, storageAreas]);
 
   return (
     <div className="viewer-container">
@@ -113,19 +121,41 @@ export const Viewer: React.FC<ViewerProps> = ({
           height: "100vh",
         }}
       />
-      <Dialog
-        open={!!selectedPosition}
-        onClose={() => setSelectedPosition(null)}
-        maxWidth="md"
-        fullWidth
-        sx={{ '& .MuiDialog-paper': { p: 3 } }}
-      >
-        <StorageAreaStepper
-          onComplete={handleStorageAreaComplete}
-          onCancel={() => setSelectedPosition(null)}
-          initialArea={selectedPosition ? { position: selectedPosition } : undefined}
+      {selectedHotspot && (
+        <Dialog
+          open={!!selectedHotspot}
+          onClose={() => setSelectedHotspot(null)}
+          maxWidth="md"
+          fullWidth
+          sx={{ '& .MuiDialog-paper': { p: 3 } }}
+        >
+          <DialogTitle>{selectedHotspot.name}</DialogTitle>
+          <DialogContent>
+            <Box sx={{ mb: 2 }}>
+              <img 
+                src={imageUrl} 
+                alt={selectedHotspot.name} 
+                style={{ 
+                  width: '100%', 
+                  height: 'auto',
+                  borderRadius: '8px'
+                }} 
+              />
+            </Box>
+            {selectedHotspot.description && (
+              <Typography variant="body1">
+                {selectedHotspot.description}
+              </Typography>
+            )}
+          </DialogContent>
+        </Dialog>
+      )}
+      {selectedStorageArea && (
+        <StorageAreaComponent
+          area={selectedStorageArea}
+          onClose={() => setSelectedStorageArea(null)}
         />
-      </Dialog>
+      )}
     </div>
   );
 };
