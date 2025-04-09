@@ -1,54 +1,97 @@
-import React from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import { StorageAreaStepper } from '../components/creation/RoomCreation/StorageAreaStepper';
-import { Container, Paper, AppBar, Toolbar, Typography, IconButton } from '@mui/material';
-import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-import { Position } from '../types';
-import { StorageAreaCreationData } from '../types/StorageArea';
+import React, { useState } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
+import { StorageAreaStepper } from "../components/creation/RoomCreation/StorageAreaStepper";
+import {
+  Container,
+  Paper,
+  AppBar,
+  Toolbar,
+  Typography,
+  IconButton,
+  Snackbar,
+  Alert,
+} from "@mui/material";
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import { Position } from "../types";
+import { StorageAreaCreationData, StorageArea } from "../types/StorageArea";
+import { IndexedDBStorage } from "../services/storage/indexedDB";
+
+const storage = new IndexedDBStorage();
 
 export const StorageAreaCreation: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const position = location.state?.position as Position;
+  const [error, setError] = useState<string | null>(null);
 
-  const handleComplete = (area: Partial<StorageAreaCreationData>, _image?: File) => {
-    // Here you would typically save the storage area data
-    console.log('Creating storage area:', { ...area, position });
-    // For now, we'll just go back to the viewer
-    navigate(-1);
+  const handleComplete = async (area: Partial<StorageAreaCreationData>) => {
+    try {
+      if (!area.name || !area.type || !area.description) {
+        throw new Error("Missing required storage area fields");
+      }
+
+      // Create new storage area
+      const newArea: StorageArea = {
+        id: `area-${Date.now()}`,
+        viewId: "default-view", // We can hardcode this for now
+        name: area.name,
+        type: area.type,
+        description: area.description,
+        position: position || { yaw: 0, pitch: 0, zoom: 50 },
+        imageUrl: area.imageFile ? URL.createObjectURL(area.imageFile) : "./default-storage.jpg",
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+
+      // Save to IndexedDB
+      await storage.init();
+      await storage.saveStorageArea(newArea);
+
+      // Navigate back to viewer
+      navigate("/");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to create storage area");
+    }
   };
 
   const handleCancel = () => {
-    navigate(-1);
+    navigate("/");
   };
-
-  if (!position) {
-    // If no position was provided, go back to the viewer
-    navigate(-1);
-    return null;
-  }
 
   return (
     <>
-      <AppBar position="static" color="default" elevation={1}>
+      <AppBar position="static">
         <Toolbar>
-          <IconButton edge="start" color="inherit" onClick={handleCancel} sx={{ mr: 2 }}>
+          <IconButton
+            edge="start"
+            color="inherit"
+            onClick={() => navigate("/")}
+            size="large"
+          >
             <ArrowBackIcon />
           </IconButton>
-          <Typography variant="h6" component="div">
-            Create Storage Area
-          </Typography>
+          <Typography variant="h6">Add Storage Area</Typography>
         </Toolbar>
       </AppBar>
-      <Container maxWidth="md" sx={{ py: 4 }}>
+      <Container maxWidth="md" sx={{ mt: 4 }}>
         <Paper sx={{ p: 3 }}>
-          <StorageAreaStepper
-            onComplete={handleComplete}
+          <StorageAreaStepper 
+            onComplete={handleComplete} 
             onCancel={handleCancel}
-            initialArea={{ position }}
           />
         </Paper>
       </Container>
+      {error && (
+        <Snackbar
+          open={!!error}
+          autoHideDuration={6000}
+          onClose={() => setError(null)}
+        >
+          <Alert severity="error" onClose={() => setError(null)}>
+            {error}
+          </Alert>
+        </Snackbar>
+      )}
     </>
   );
-}; 
+};

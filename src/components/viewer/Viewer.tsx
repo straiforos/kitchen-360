@@ -14,9 +14,9 @@ import "./Viewer.css";
 
 interface ViewerProps {
   imageUrl: string;
-  hotspots: Hotspot[];
-  onHotspotClick: (hotspot: Hotspot) => void;
-  storageAreas?: StorageArea[];
+  // hotspots: Hotspot[];
+  // onHotspotClick: (hotspot: Hotspot) => void;
+  storageAreas: StorageArea[];
 }
 
 /**
@@ -24,9 +24,7 @@ interface ViewerProps {
  */
 export const Viewer: React.FC<ViewerProps> = ({
   imageUrl,
-  hotspots,
-  onHotspotClick,
-  storageAreas = [],
+  storageAreas,
 }) => {
   const navigate = useNavigate();
   const containerRef = useRef<HTMLDivElement>(null);
@@ -78,8 +76,6 @@ export const Viewer: React.FC<ViewerProps> = ({
     };
   }, [
     imageUrl,
-    hotspots,
-    onHotspotClick,
     storageAreas,
     navigate,
   ]);
@@ -88,15 +84,7 @@ export const Viewer: React.FC<ViewerProps> = ({
     if (!viewerRef.current) return;
     const markersPlugin =
       viewerRef.current.getPlugin<MarkersPlugin>(MarkersPlugin);
-    if (markersPlugin) {
-      // Add hotspot markers
-      const hotspotMarkers = hotspots?.map((hotspot) => ({
-        id: hotspot.id,
-        position: hotspot.position,
-        type: hotspot.type,
-        html: hotspot.html
-      }));
-      
+    if (markersPlugin) {      
       // Add storage area markers
       const storageAreaMarkers = storageAreas?.map((area) => ({
         id: area.id,
@@ -105,11 +93,11 @@ export const Viewer: React.FC<ViewerProps> = ({
       }));
       
       markersPlugin.clearMarkers();
-      [...hotspotMarkers, ...storageAreaMarkers].forEach((marker) => 
+      [...storageAreaMarkers].forEach((marker) => 
         markersPlugin.addMarker(marker)
       );
     }
-  }, [hotspots, storageAreas]);
+  }, [storageAreas]);
 
   return (
     <div className="viewer-container">

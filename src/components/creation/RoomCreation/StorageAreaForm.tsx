@@ -81,7 +81,7 @@ export const StorageAreaForm: React.FC<StorageAreaFormProps> = ({
           <FormControl fullWidth>
             <InputLabel>Type</InputLabel>
             <Select
-              value={formData.type}
+              value={formData.type || ''}
               label="Type"
               onChange={(e) =>
                 setFormData({

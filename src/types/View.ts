@@ -38,6 +38,8 @@ export interface View extends ImageUrlMixin {
   storageAreas: StorageArea[];
   /** Array of connections to other views */
   connections: ViewConnection[];
+  /** Initial position when loading this view */
+  initialPosition: Position;
   /** Timestamp when the view was created */
   createdAt: Date;
   /** Timestamp when the view was last updated */
@@ -54,4 +56,6 @@ export interface ViewCreationData extends ImageFileMixin {
   description: string;
   /** Position coordinates for the new view */
   position: Position;
+  /** Initial position when loading this view */
+  initialPosition: Position;
 } 
