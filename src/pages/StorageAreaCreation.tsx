@@ -1,104 +1,115 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { StorageAreaStepper } from "../components/creation/RoomCreation/StorageAreaStepper";
-import {
-  Container,
-  Paper,
-  AppBar,
-  Toolbar,
-  Typography,
-  IconButton,
-  Snackbar,
-  Alert,
-} from "@mui/material";
-import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import { useApp } from "../context/useApp";
 import { Position } from "../types";
-import { StorageAreaCreationData, StorageArea } from "../types/StorageArea";
 import { IndexedDBStorage } from "../services/storage/indexedDB";
+import { StorageArea, StorageAreaType } from "../types/StorageArea";
+import { Box, TextField, Button, Typography, MenuItem } from "@mui/material";
 
 const storage = new IndexedDBStorage();
 
 export const StorageAreaCreation: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const position = location.state?.position as Position;
+  const { currentView } = useApp();
+  const [name, setName] = useState("");
+  const [description, setDescription] = useState("");
+  const [type, setType] = useState<StorageAreaType>("Custom");
+  const [image, setImage] = useState<File | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const handleComplete = async (area: Partial<StorageAreaCreationData>, image?: File) => {
+  const position = location.state?.position as Position;
+
+  useEffect(() => {
+    if (!position || !currentView) {
+      navigate("/");
+    }
+  }, [position, currentView, navigate]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+
     try {
-      if (!area.name || !area.type || !area.description) {
-        throw new Error("Missing required storage area fields");
-      }
-
-      let imageUrl = "./default-storage.jpg";
-      if (image) {
-        // Save the image to IndexedDB and get the URL
-        const imageId = `image-${Date.now()}`;
-        imageUrl = await storage.saveImage(imageId, image);
-      }
-
-      // Create new storage area
-      const newArea: StorageArea = {
-        id: `area-${Date.now()}`,
-        viewId: "default-view", // We can hardcode this for now
-        name: area.name,
-        type: area.type,
-        description: area.description,
-        position: position || { yaw: 0, pitch: 0, zoom: 50 },
-        imageUrl,
+      const storageArea: StorageArea = {
+        id: crypto.randomUUID(),
+        viewId: currentView!.id,
+        name,
+        type,
+        description,
+        position,
+        imageUrl: "",
         createdAt: new Date(),
         updatedAt: new Date(),
       };
 
-      // Save to IndexedDB
-      await storage.init();
-      await storage.saveStorageArea(newArea);
+      if (image) {
+        const imageUrl = await storage.saveImage(storageArea.id, image);
+        storageArea.imageUrl = imageUrl;
+      }
 
-      // Navigate back to viewer
+      await storage.saveStorageArea(storageArea);
       navigate("/");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to create storage area");
+      setError("Failed to create storage area");
+      console.error(err);
     }
   };
 
-  const handleCancel = () => {
-    navigate("/");
-  };
-
   return (
-    <>
-      <AppBar position="static">
-        <Toolbar>
-          <IconButton
-            edge="start"
-            color="inherit"
-            onClick={() => navigate("/")}
-            size="large"
-          >
-            <ArrowBackIcon />
-          </IconButton>
-          <Typography variant="h6">Add Storage Area</Typography>
-        </Toolbar>
-      </AppBar>
-      <Container maxWidth="md" sx={{ mt: 4 }}>
-        <Paper sx={{ p: 3 }}>
-          <StorageAreaStepper 
-            onComplete={handleComplete} 
-            onCancel={handleCancel}
-          />
-        </Paper>
-      </Container>
-      {error && (
-        <Snackbar
-          open={!!error}
-          autoHideDuration={6000}
-          onClose={() => setError(null)}
+    <Box sx={{ p: 3 }}>
+      <form onSubmit={handleSubmit}>
+        <TextField
+          fullWidth
+          label="Name"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          required
+          margin="normal"
+        />
+        <TextField
+          fullWidth
+          select
+          label="Type"
+          value={type}
+          onChange={(e) => setType(e.target.value as StorageAreaType)}
+          required
+          margin="normal"
         >
-          <Alert severity="error" onClose={() => setError(null)}>
+          <MenuItem value="Cabinet">Cabinet</MenuItem>
+          <MenuItem value="Drawer">Drawer</MenuItem>
+          <MenuItem value="Shelf">Shelf</MenuItem>
+          <MenuItem value="Custom">Custom</MenuItem>
+        </TextField>
+        <TextField
+          fullWidth
+          label="Description"
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+          multiline
+          rows={4}
+          margin="normal"
+        />
+        <input
+          type="file"
+          accept="image/*"
+          onChange={(e) => setImage(e.target.files?.[0] || null)}
+          style={{ margin: "16px 0" }}
+        />
+        {error && (
+          <Typography color="error" sx={{ mb: 2 }}>
             {error}
-          </Alert>
-        </Snackbar>
-      )}
-    </>
+          </Typography>
+        )}
+        <Button
+          type="submit"
+          variant="contained"
+          color="primary"
+          disabled={!name || !position || !currentView}
+        >
+          Create Storage Area
+        </Button>
+      </form>
+    </Box>
   );
 };

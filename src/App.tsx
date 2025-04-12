@@ -8,6 +8,7 @@ import { useApp } from "./context/useApp";
 import { StorageArea } from "./types/StorageArea";
 import { IndexedDBStorage } from "./services/storage/indexedDB";
 import { ViewStorageArea } from "./pages/ViewStorageArea";
+import { AppBar } from "./components/layout/AppBar";
 
 const storage = new IndexedDBStorage();
 
@@ -33,15 +34,39 @@ const hardcodedView: View = {
   updatedAt: new Date()
 };
 
-/**
- * 
- * @returns 360 Photosphere viewer with storage location markers.
- */
+const AppContent: React.FC = () => {
+  const { mode, toggleMode } = useApp();
+
+  return (
+    <>
+      <AppBar mode={mode} onModeChange={toggleMode} showHomeButton={true} />
+      <main style={{ height: 'calc(100vh - 64px)' }}>
+        <Routes>
+          <Route path="/" element={<ViewerPage />} />
+          <Route path="/storage">
+            <Route path="create" element={<StorageAreaCreation />} />
+            <Route path=":id" element={<ViewStorageArea />} />
+          </Route>
+        </Routes>
+      </main>
+    </>
+  );
+};
+
+const App: React.FC = () => {
+  return (
+    <AppProvider>
+      <BrowserRouter>
+        <AppContent />
+      </BrowserRouter>
+    </AppProvider>
+  );
+};
+
 const ViewerPage: React.FC = () => {
   const { setCurrentView } = useApp();
   const [storageAreas, setStorageAreas] = useState<StorageArea[]>([]);
 
-  // Load storage areas when component mounts
   useEffect(() => {
     const loadStorageAreas = async () => {
       try {
@@ -56,7 +81,6 @@ const ViewerPage: React.FC = () => {
     loadStorageAreas();
   }, []);
 
-  // Set the current view when the component mounts
   useEffect(() => {
     setCurrentView(hardcodedView);
   }, [setCurrentView]);
@@ -66,22 +90,6 @@ const ViewerPage: React.FC = () => {
       imageUrl={hardcodedView.imageUrl}
       storageAreas={storageAreas}
     />
-  );
-};
-
-const App: React.FC = () => {
-  return (
-    <AppProvider>
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<ViewerPage />} />
-          <Route path="/storage">
-            <Route path="create" element={<StorageAreaCreation />} />
-            <Route path=":id" element={<ViewStorageArea />} />
-          </Route>
-        </Routes>
-      </BrowserRouter>
-    </AppProvider>
   );
 };
 

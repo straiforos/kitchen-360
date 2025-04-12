@@ -1,9 +1,8 @@
-import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { AppBar } from '../AppBar';
 import { AppProvider } from '../../../context/AppContext';
 import { useApp } from '../../../context/useApp';
-import { setupIndexedDBMock } from '../../../services/storage/__tests__/__mocks__/indexedDB';
+import { setupIndexedDBMock } from '@components/__tests__/__mocks__/indexedDB';
 
 // Mock the AppContext
 jest.mock('../../../context/useApp');
