@@ -19,7 +19,9 @@ export const Viewer: React.FC<ViewerProps> = ({
   const navigate = useNavigate();
   const containerRef = useRef<HTMLDivElement>(null);
   const viewerRef = useRef<PhotoSphereViewer | null>(null);
+  const markersPluginRef = useRef<MarkersPlugin | null>(null);
 
+  // Initialize viewer
   useEffect(() => {
     if (!containerRef.current) return;
 
@@ -32,46 +34,62 @@ export const Viewer: React.FC<ViewerProps> = ({
     });
 
     viewerRef.current = viewer;
+    markersPluginRef.current = viewer.getPlugin<MarkersPlugin>(MarkersPlugin);
 
-    const markersPlugin = viewer.getPlugin<MarkersPlugin>(MarkersPlugin);
-    if (markersPlugin) {
-      markersPlugin.addEventListener("select-marker", ({ marker }: { marker: { id: string } }) => {
-        const storageArea = storageAreas.find((a) => a.id === marker.id);
-        if (storageArea) {
-          navigate(`/storage/${storageArea.id}`);
-        }
-      });
-    }
+    return () => {
+      viewer.destroy();
+      viewerRef.current = null;
+      markersPluginRef.current = null;
+    };
+  }, [imageUrl]);
 
-    viewer.addEventListener("click", (e: { data: { yaw: number; pitch: number } }) => {
+  // Setup event listeners
+  useEffect(() => {
+    const viewer = viewerRef.current;
+    const markersPlugin = markersPluginRef.current;
+
+    if (!viewer || !markersPlugin) return;
+
+    const handleMarkerSelect = (e: any) => {
+      const storageArea = storageAreas.find((a) => a.id === e.marker.id);
+      if (storageArea) {
+        navigate(`/storage/${storageArea.id}`);
+      }
+    };
+
+    const handleClick = (e: any) => {
       const position: Position = {
         yaw: e.data.yaw,
         pitch: e.data.pitch,
         zoom: viewer.getZoomLevel()
       };
       navigate("/storage/create", { state: { position } });
-    });
+    };
+
+    markersPlugin.addEventListener("select-marker", handleMarkerSelect);
+    viewer.addEventListener("click", handleClick);
 
     return () => {
-      viewer.destroy();
+      markersPlugin.removeEventListener("select-marker", handleMarkerSelect);
+      viewer.removeEventListener("click", handleClick);
     };
-  }, [imageUrl, storageAreas, navigate]);
+  }, [navigate, storageAreas]);
 
+  // Update markers
   useEffect(() => {
-    if (!viewerRef.current) return;
-    const markersPlugin = viewerRef.current.getPlugin<MarkersPlugin>(MarkersPlugin);
-    if (markersPlugin) {      
-      const storageAreaMarkers = storageAreas?.map((area) => ({
-        id: area.id,
-        position: area.position,
-        html: `<div class="storage-marker">${area.name}</div>`
-      }));
-      
-      markersPlugin.clearMarkers();
-      [...storageAreaMarkers].forEach((marker) => 
-        markersPlugin.addMarker(marker)
-      );
-    }
+    const markersPlugin = markersPluginRef.current;
+    if (!markersPlugin) return;
+
+    const storageAreaMarkers = storageAreas.map((area) => ({
+      id: area.id,
+      position: area.position,
+      html: `<div class="storage-marker">${area.name}</div>`
+    }));
+
+    markersPlugin.clearMarkers();
+    storageAreaMarkers.forEach((marker) => 
+      markersPlugin.addMarker(marker)
+    );
   }, [storageAreas]);
 
   return (

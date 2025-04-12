@@ -64,7 +64,7 @@ const App: React.FC = () => {
 };
 
 const ViewerPage: React.FC = () => {
-  const { setCurrentView } = useApp();
+  const { setCurrentView, currentView } = useApp();
   const [storageAreas, setStorageAreas] = useState<StorageArea[]>([]);
 
   useEffect(() => {
@@ -82,8 +82,10 @@ const ViewerPage: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    setCurrentView(hardcodedView);
-  }, [setCurrentView]);
+    if (!currentView) {
+      setCurrentView(hardcodedView);
+    }
+  }, [setCurrentView, currentView]);
 
   return (
     <Viewer
